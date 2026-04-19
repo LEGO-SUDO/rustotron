@@ -1,0 +1,44 @@
+---
+source: tests/integration_tui_snapshots.rs
+expression: rendered
+---
+ [/url]  [GET]  [POST]  [PUT]  [DELETE]  [PATCH]  [2xx]  [3xx]  [4xx]  [5xx]  [p]  [c clear]
+┌ Requests (0) ────────────────────────────────┐┌ Detail ──────────────────────────────────────────────────────────────┐
+│       waiting for an RN app to connect…      ││                         (no request selected)                        │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+│                                              ││                                                                      │
+└──────────────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────┘
+ rustotron  listening on ws://127.0.0.1:9091  —  clients: 0  —  rows: 0
+ q/Ctrl+C: quit · j/k or ↑/↓: nav · tab: pane · / url · 1-5 methods · Alt+1-4 status · p pause · c clear · z collapse ·

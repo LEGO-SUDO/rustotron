@@ -1,0 +1,14 @@
+# Use mold linker on Linux for faster iteration. macOS uses the system linker
+# (Apple's new ld-prime is fast; no override needed).
+#
+# mold must be installed separately: `sudo apt install mold` on Debian/Ubuntu
+# or `brew install mold` on Linux via Homebrew. If not installed, Cargo falls
+# back to the default linker — comment out this section to silence the warning.
+
+[target.x86_64-unknown-linux-gnu]
+linker = "clang"
+rustflags = ["-C", "link-arg=-fuse-ld=mold"]
+
+[target.aarch64-unknown-linux-gnu]
+linker = "clang"
+rustflags = ["-C", "link-arg=-fuse-ld=mold"]

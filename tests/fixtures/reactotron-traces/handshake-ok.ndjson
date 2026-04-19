@@ -1,0 +1,2 @@
+{"type":"client.intro","payload":{"name":"DemoApp","environment":"development","reactotronLibraryName":"reactotron-react-native","reactotronLibraryVersion":"5.1.18","platform":"ios","platformVersion":"17.4","osRelease":"23E224","model":"iPhone15,2","systemName":"iOS","screenWidth":390,"screenHeight":844,"screenScale":3,"reactNativeVersion":"0.74.1"},"important":false,"date":"2026-04-19T12:00:00.000Z","deltaTime":0}
+{"type":"setClientId","payload":"7f3c1e2a-9b4d-4c5f-8a6e-1d2c3b4a5f60"}

@@ -1,0 +1,44 @@
+---
+source: tests/integration_tui_snapshots.rs
+expression: rendered
+---
+ [/url]  [GET]  [POST]  [PUT]  [DELETE]  [PATCH]  [2xx]  [3xx]  [4xx]  [5xx]  [p]  [c clear]
+┌ Requests (4/20) ─────────────────────────────┐┌ Detail ──────────────────────────────────────────────────────────────┐
+│▸ 12:00:05 GET    404    31ms /missing-resourc││Method:   GET                                                        █│
+│  12:00:11 GET    401    14ms /orders/2345/ite││URL:      https://api.example.com/missing-resource                   █│
+│  12:00:15 POST   413    26ms /upload/blob    ││Status:   404   Duration: 31ms                                       █│
+│  12:00:17 GET    429     8ms /flags          ││                                                                     █│
+│                                              ││▾ Request Headers                                                    █│
+│                                              ││  Accept: application/json                                           █│
+│                                              ││  Content-Type: application/json                                     █│
+│                                              ││                                                                     █│
+│                                              ││▾ Request Body                                                       █│
+│                                              ││  {                                                                  █│
+│                                              ││    "error": "invalid_token",                                        █│
+│                                              ││    "hint": "POST /auth/refresh with refresh_token",                 █│
+│                                              ││    "message": "The bearer token has expired. Refresh it and try     █│
+│                                              ││again."                                                              █│
+│                                              ││  }                                                                  █│
+│                                              ││                                                                     █│
+│                                              ││▾ Response Headers                                                   █│
+│                                              ││  Content-Type: application/json; charset=utf-8                      █│
+│                                              ││  X-Request-Id: req-0005                                             █│
+│                                              ││                                                                     █│
+│                                              ││▾ Response Body                                                      ║│
+│                                              ││  {                                                                  ║│
+│                                              ││    "error": "invalid_token",                                        ║│
+│                                              ││    "hint": "POST /auth/refresh with refresh_token",                 ║│
+│                                              ││    "message": "The bearer token has expired. Refresh it and try     ║│
+│                                              ││again."                                                              ║│
+│                                              ││  }                                                                  ║│
+│                                              ││                                                                     ║│
+│                                              ││                                                                     ║│
+│                                              ││                                                                     ║│
+│                                              ││                                                                     ║│
+│                                              ││                                                                     ║│
+│                                              ││                                                                     ║│
+│                                              ││                                                                     ║│
+│                                              ││                                                                     ║│
+└──────────────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────┘
+ rustotron  mock data — 20 rows — not connected to any server · filter: 4xx
+ q/Ctrl+C: quit · j/k or ↑/↓: nav · tab: pane · / url · 1-5 methods · Alt+1-4 status · p pause · c clear · z collapse ·

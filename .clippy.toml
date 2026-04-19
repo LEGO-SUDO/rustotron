@@ -1,0 +1,9 @@
+avoid-breaking-exported-api = false
+disallowed-methods = [
+    { path = "std::sync::Mutex::new", reason = "use tokio::sync or actor+channels; std::sync::Mutex blocks the runtime" },
+    { path = "std::sync::RwLock::new", reason = "use tokio::sync or actor+channels; std::sync primitives block the runtime" },
+]
+disallowed-types = [
+    { path = "std::sync::Mutex", reason = "use tokio::sync::Mutex at boundaries, actor+channels otherwise" },
+    { path = "std::sync::RwLock", reason = "use tokio::sync::RwLock at boundaries, actor+channels otherwise" },
+]

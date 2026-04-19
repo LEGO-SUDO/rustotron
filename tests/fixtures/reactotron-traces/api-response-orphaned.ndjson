@@ -1,0 +1,1 @@
+{"type":"api.response","payload":{"duration":58.3,"request":{"url":"https://api.example.com/health","method":"GET","data":"~~~ undefined ~~~","headers":{"Accept":"application/json"},"params":null},"response":{"status":204,"headers":{"X-Server":"demo-edge-7"},"body":"~~~ skipped ~~~"}},"important":false,"date":"2026-04-19T12:30:00.000Z","deltaTime":42}

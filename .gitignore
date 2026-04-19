@@ -1,0 +1,40 @@
+# Rust build artifacts
+/target
+**/*.rs.bk
+*.pdb
+
+# Coverage
+*.profraw
+*.profdata
+tarpaulin-report.html
+cobertura.xml
+
+# macOS
+.DS_Store
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Env / secrets
+.env
+.env.local
+
+# cargo-dist artifacts
+/dist
+
+# mdBook / docs site output
+/book
+
+# Launch runbook (not public)
+LAUNCH.md
+
+# Private AI-agent workspace — lives in the `rustotron-agents` private
+# repo as a nested .git directory inside .private/. Keeps the build
+# journal, PRD, CODEX review, CLAUDE.md playbook, and agent tool
+# settings out of the public tree while still letting Claude Code work
+# in one flat filesystem.
+/.private/

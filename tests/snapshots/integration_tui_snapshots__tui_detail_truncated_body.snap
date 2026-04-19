@@ -1,0 +1,44 @@
+---
+source: tests/integration_tui_snapshots.rs
+expression: rendered
+---
+ [/url]  [GET]  [POST]  [PUT]  [DELETE]  [PATCH]  [2xx]  [3xx]  [4xx]  [5xx]  [p]  [c clear]
+┌ Requests (1) ────────────────────────────────┐┌ Detail ──────────────────────────────────────────────────────────────┐
+│▸ 12:00:00 GET    200     5ms /large          ││Method:   GET                                                        █│
+│                                              ││URL:      https://api.example.com/large                              █│
+│                                              ││Status:   200   Duration: 5ms                                        █│
+│                                              ││                                                                     █│
+│                                              ││▾ Request Headers                                                    █│
+│                                              ││  (none)                                                             █│
+│                                              ││                                                                     █│
+│                                              ││▾ Request Body                                                       █│
+│                                              ││  (empty)                                                            █│
+│                                              ││                                                                     █│
+│                                              ││▾ Response Headers                                                   █│
+│                                              ││  (none)                                                             █│
+│                                              ││                                                                     █│
+│                                              ││▾ Response Body                                                      █│
+│                                              ││  {                                                                  █│
+│                                              ││    "giant":                                                         █│
+│                                              ││"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
+└──────────────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────┘
+ rustotron  mock data — 1 rows — not connected to any server
+ q/Ctrl+C: quit · j/k or ↑/↓: nav · tab: pane · / url · 1-5 methods · Alt+1-4 status · p pause · c clear · z collapse ·

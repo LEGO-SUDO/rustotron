@@ -1,0 +1,44 @@
+---
+source: tests/integration_tui_snapshots.rs
+expression: rendered
+---
+ [/search_]  [GET]  [POST]  [PUT]  [DELETE]  [PATCH]  [2xx]  [3xx]  [4xx]  [5xx]  [p]  [c clear]
+┌ Requests (20) ───────────────────────────────┐┌ Detail ──────────────────────────────────────────────────────────────┐
+│▸ 12:00:00 POST   200   142ms /auth/login     ││Method:   POST                                                       █│
+│  12:00:01 GET    200    48ms /users/me       ││URL:      https://api.example.com/auth/login                         █│
+│  12:00:02 GET    200   211ms /feed?cursor=2A9││Status:   200   Duration: 142ms                                      █│
+│  12:00:03 GET    304    28ms /notifications/u││                                                                     █│
+│  12:00:04 PUT    200    95ms /profile        ││▾ Request Headers                                                    █│
+│  12:00:05 GET    404    31ms /missing-resourc││  Accept: application/json                                           █│
+│  12:00:06 POST   201   788ms /payments/charge││  Authorization: Bearer super-secret-XYZ                             █│
+│  12:00:07 DELETE 204    17ms /sessions/old-id││  Content-Type: application/json                                     █│
+│  12:00:08 GET    200    62ms /assets/images/l││                                                                     █│
+│  12:00:09 POST   200   356ms /search?q=reacto││▾ Request Body                                                       █│
+│  12:00:10 PATCH  200    71ms /settings/prefer││  {                                                                  █│
+│  12:00:11 GET    401    14ms /orders/2345/ite││    "refresh": "r_8f2c9d1",                                          █│
+│  12:00:12 GET    202     9ms /events/track   ││    "token": "eyJhbGciOiJIUzI1NiIsInR5c...",                         █│
+│  12:00:13 POST   500  1042ms /v2/batch/ingest││    "user": {                                                        █│
+│  12:00:14 GET    200   118ms /really/long/url││      "email": "claude@example.com",                                 █│
+│  12:00:15 POST   413    26ms /upload/blob    ││      "id": 4218,                                                    █│
+│  12:00:16 GET    200     4ms /healthz        ││      "roles": [                                                     ║│
+│  12:00:17 GET    429     8ms /flags          ││        "admin",                                                     ║│
+│  12:00:18 DELETE 200    19ms /cache/keys/user││        "viewer"                                                     ║│
+│  12:00:19 POST   503  2150ms /reports/generat││      ]                                                              ║│
+│                                              ││    }                                                                ║│
+│                                              ││  }                                                                  ║│
+│                                              ││                                                                     ║│
+│                                              ││▾ Response Headers                                                   ║│
+│                                              ││  Content-Type: application/json; charset=utf-8                      ║│
+│                                              ││  X-Request-Id: req-0000                                             ║│
+│                                              ││                                                                     ║│
+│                                              ││▾ Response Body                                                      ║│
+│                                              ││  {                                                                  ║│
+│                                              ││    "refresh": "r_8f2c9d1",                                          ║│
+│                                              ││    "token": "eyJhbGciOiJIUzI1NiIsInR5c...",                         ║│
+│                                              ││    "user": {                                                        ║│
+│                                              ││      "email": "claude@example.com",                                 ║│
+│                                              ││      "id": 4218,                                                    ║│
+│                                              ││      "roles": [                                                     ║│
+└──────────────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────┘
+ rustotron  mock data — 20 rows — not connected to any server
+ q/Ctrl+C: quit · j/k or ↑/↓: nav · tab: pane · / url · 1-5 methods · Alt+1-4 status · p pause · c clear · z collapse ·
