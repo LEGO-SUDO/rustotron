@@ -84,6 +84,44 @@ pub fn render(area: Rect, buf: &mut Buffer, app: &mut App, theme: &Theme) {
         .highlight_style(theme.row_highlight)
         .highlight_symbol("▸ ");
     StatefulWidget::render(list, area, buf, &mut app.list_state);
+
+    // Overlay a per-row `[y]` copy glyph at the right edge of each
+    // rendered row. Registered AFTER the SelectRow hit regions so
+    // reverse-iteration dispatch picks the narrower copy region when
+    // clicks land on the glyph.
+    overlay_row_copy_glyphs(inner, buf, app, theme, visible_len);
+}
+
+/// Paint a `[y]` marker at the right edge of every visible row and
+/// register a `CopyRowAsCurl` hit region over it. Bail gracefully if the
+/// pane is narrower than the glyph (`[y]` + one cell of breathing room).
+fn overlay_row_copy_glyphs(
+    inner: Rect,
+    buf: &mut Buffer,
+    app: &mut App,
+    theme: &Theme,
+    visible_len: usize,
+) {
+    const GLYPH: &str = "[y]";
+    const GLYPH_WIDTH: u16 = 3;
+    if inner.width < GLYPH_WIDTH + 1 {
+        return;
+    }
+    let right_edge = inner.x.saturating_add(inner.width);
+    let glyph_x = right_edge.saturating_sub(GLYPH_WIDTH);
+    for idx in 0..visible_len {
+        let y_offset = u16::try_from(idx).unwrap_or(u16::MAX);
+        let Some(y) = inner.y.checked_add(y_offset) else {
+            break;
+        };
+        if y >= inner.y.saturating_add(inner.height) {
+            break;
+        }
+        buf.set_string(glyph_x, y, GLYPH, theme.dim);
+        let rect = Rect::new(glyph_x, y, GLYPH_WIDTH, 1);
+        app.hit_regions
+            .push(HitRegion::new(rect, Action::CopyRowAsCurl(idx)));
+    }
 }
 
 fn render_empty(area: Rect, buf: &mut Buffer, block: Block<'_>, app: &mut App, theme: &Theme) {

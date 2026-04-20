@@ -38,6 +38,9 @@ fn plain_render(app: &mut App) -> String {
     unsafe {
         std::env::set_var("TERM", "xterm-256color");
         std::env::set_var("NO_COLOR", "1");
+        // Pin the memory badge so snapshots don't flap between runs
+        // when rustotron's RSS changes by a few KB.
+        std::env::set_var("RUSTOTRON_FAKE_MEM_MB", "12.3");
     }
     let theme = Theme::plain();
     let backend = TestBackend::new(COLS, ROWS);
@@ -73,19 +76,19 @@ fn build_app_with_large_body() -> App {
         request: ApiRequestSide {
             url: "https://api.example.com/large".to_string(),
             method: Some("GET".to_string()),
-            data: serde_json::Value::Null,
+            data: rustotron::protocol::Body::null(),
             headers: None,
             params: None,
         },
         response: ApiResponseSide {
             status: 200,
             headers: None,
-            body: json!({ "giant": "x".repeat(1_200_000) }),
+            body: rustotron::protocol::Body::from_value(&json!({ "giant": "x".repeat(1_200_000) })),
         },
     };
     let mut req = Request::complete(payload, None);
     req.received_at = anchor();
-    let mut app = App::new("ws://127.0.0.1:9091", true);
+    let mut app = App::new("ws://127.0.0.1:9090", true);
     app.set_rows(vec![req]);
     app.focus(PaneId::Detail);
     app
@@ -93,14 +96,14 @@ fn build_app_with_large_body() -> App {
 
 #[test]
 fn snapshot_empty_state() {
-    let mut app = App::new("ws://127.0.0.1:9091", false);
+    let mut app = App::new("ws://127.0.0.1:9090", false);
     let rendered = plain_render(&mut app);
     assert_snapshot!("tui_empty_state", rendered);
 }
 
 #[test]
 fn snapshot_list_view_with_mock_data() {
-    let mut app = App::new("ws://127.0.0.1:9091", true);
+    let mut app = App::new("ws://127.0.0.1:9090", true);
     app.set_rows(mock::mock_rows(anchor()));
     let rendered = plain_render(&mut app);
     assert_snapshot!("tui_list_view_mock", rendered);
@@ -108,7 +111,7 @@ fn snapshot_list_view_with_mock_data() {
 
 #[test]
 fn snapshot_detail_view_focused() {
-    let mut app = App::new("ws://127.0.0.1:9091", true);
+    let mut app = App::new("ws://127.0.0.1:9090", true);
     app.set_rows(mock::mock_rows(anchor()));
     app.focus(PaneId::Detail);
     let rendered = plain_render(&mut app);
@@ -117,7 +120,7 @@ fn snapshot_detail_view_focused() {
 
 #[test]
 fn snapshot_detail_view_with_request_body_collapsed() {
-    let mut app = App::new("ws://127.0.0.1:9091", true);
+    let mut app = App::new("ws://127.0.0.1:9090", true);
     app.set_rows(mock::mock_rows(anchor()));
     app.focus(PaneId::Detail);
     app.toggle_section(SectionId::RequestBody);
@@ -134,7 +137,7 @@ fn snapshot_detail_view_large_body_truncated() {
 
 #[test]
 fn snapshot_filter_bar_input_open() {
-    let mut app = App::new("ws://127.0.0.1:9091", true);
+    let mut app = App::new("ws://127.0.0.1:9090", true);
     app.set_rows(mock::mock_rows(anchor()));
     app.begin_filter_input();
     for c in "search".chars() {
@@ -146,7 +149,7 @@ fn snapshot_filter_bar_input_open() {
 
 #[test]
 fn snapshot_filter_bar_method_active_post() {
-    let mut app = App::new("ws://127.0.0.1:9091", true);
+    let mut app = App::new("ws://127.0.0.1:9090", true);
     app.set_rows(mock::mock_rows(anchor()));
     app.toggle_method("POST");
     let rendered = plain_render(&mut app);
@@ -155,7 +158,7 @@ fn snapshot_filter_bar_method_active_post() {
 
 #[test]
 fn snapshot_filter_bar_status_class_active() {
-    let mut app = App::new("ws://127.0.0.1:9091", true);
+    let mut app = App::new("ws://127.0.0.1:9090", true);
     app.set_rows(mock::mock_rows(anchor()));
     app.toggle_status_class(StatusClass::ClientError);
     let rendered = plain_render(&mut app);
@@ -164,7 +167,7 @@ fn snapshot_filter_bar_status_class_active() {
 
 #[test]
 fn snapshot_confirm_clear_modal() {
-    let mut app = App::new("ws://127.0.0.1:9091", true);
+    let mut app = App::new("ws://127.0.0.1:9090", true);
     app.set_rows(mock::mock_rows(anchor()));
     app.begin_clear_confirm();
     let rendered = plain_render(&mut app);

@@ -40,5 +40,5 @@ expression: rendered
 │                                              ││                                                                      │
 │                                              ││                                                                      │
 └──────────────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────┘
- rustotron  listening on ws://127.0.0.1:9091  —  clients: 0  —  rows: 0
- q/Ctrl+C: quit · j/k or ↑/↓: nav · tab: pane · / url · 1-5 methods · Alt+1-4 status · p pause · c clear · z collapse ·
+ rustotron  listening on ws://127.0.0.1:9090  —  clients: 0  —  rows: 0  —  mem: 12.3 MB
+ q/Ctrl+C: quit · tab: pane · j/k or ↑/↓: nav (list) / scroll body (detail) · PgUp/PgDn: body · / url · 1-5 methods · Al

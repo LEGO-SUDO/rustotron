@@ -4,10 +4,10 @@ expression: rendered
 ---
  [/url]  [GET]  [POST]  [PUT]  [DELETE]  [PATCH]  [2xx]  [3xx]  [4xx]  [5xx]  [p]  [c clear]
 ┌ Requests (4/20) ─────────────────────────────┐┌ Detail ──────────────────────────────────────────────────────────────┐
-│▸ 12:00:05 GET    404    31ms /missing-resourc││Method:   GET                                                        █│
-│  12:00:11 GET    401    14ms /orders/2345/ite││URL:      https://api.example.com/missing-resource                   █│
-│  12:00:15 POST   413    26ms /upload/blob    ││Status:   404   Duration: 31ms                                       █│
-│  12:00:17 GET    429     8ms /flags          ││                                                                     █│
+│▸ 12:00:05 GET    404    31ms /missing-reso[y]││Method:   GET                                                        █│
+│  12:00:11 GET    401    14ms /orders/2345/[y]││URL:      https://api.example.com/missing-resource                   █│
+│  12:00:15 POST   413    26ms /upload/blob [y]││Status:   404   Duration: 31ms                                       █│
+│  12:00:17 GET    429     8ms /flags       [y]││                                                                     █│
 │                                              ││▾ Request Headers                                                    █│
 │                                              ││  Accept: application/json                                           █│
 │                                              ││  Content-Type: application/json                                     █│
@@ -40,5 +40,5 @@ expression: rendered
 │                                              ││                                                                     ║│
 │                                              ││                                                                     ║│
 └──────────────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────┘
- rustotron  mock data — 20 rows — not connected to any server · filter: 4xx
- q/Ctrl+C: quit · j/k or ↑/↓: nav · tab: pane · / url · 1-5 methods · Alt+1-4 status · p pause · c clear · z collapse ·
+ rustotron  mock data — 20 rows — not connected to any server · filter: 4xx  —  mem: 12.3 MB
+ q/Ctrl+C: quit · tab: pane · j/k or ↑/↓: nav (list) / scroll body (detail) · PgUp/PgDn: body · / url · 1-5 methods · Al

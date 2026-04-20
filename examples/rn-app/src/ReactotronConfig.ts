@@ -4,7 +4,7 @@
  * Every rustotron-compatible RN app needs two things:
  *   1. `reactotron-react-native` configured with the `networking()` plugin.
  *   2. The server host pointing at where rustotron is listening
- *      (127.0.0.1:9091 by default).
+ *      (127.0.0.1:9090 by default).
  *
  * The call to `.connect()` starts the WebSocket as soon as the app boots;
  * rustotron should be running before you launch the app, or the client
@@ -19,7 +19,7 @@ import Reactotron, { networking } from 'reactotron-react-native';
 //     your Mac's LAN IP (find it with `ipconfig getifaddr en0`) AND
 //     start rustotron with `--host 0.0.0.0`.
 const RUSTOTRON_HOST = '127.0.0.1';
-const RUSTOTRON_PORT = 9091;
+const RUSTOTRON_PORT = 9090;
 
 Reactotron
   .configure({

@@ -318,14 +318,14 @@ mod tests {
             request: ApiRequestSide {
                 url: url.to_string(),
                 method: Some(method.to_string()),
-                data: Value::Null,
+                data: crate::protocol::Body::null(),
                 headers: None,
                 params: None,
             },
             response: ApiResponseSide {
                 status,
                 headers: None,
-                body: Value::Null,
+                body: crate::protocol::Body::null(),
             },
         }
     }
@@ -579,7 +579,8 @@ mod tests {
     async fn search_requests_finds_url_and_body_substrings() {
         let (service, handle, _bus, token, join) = service_fixture().await;
         let mut exchange = sample_exchange("POST", "https://api.test/submit", 200);
-        exchange.response.body = Value::String("matching-cookie-string".to_string());
+        exchange.response.body =
+            crate::protocol::Body::from_value(&Value::String("matching-cookie-string".to_string()));
         handle.on_response(exchange, None).await.unwrap();
         handle
             .on_response(sample_exchange("GET", "https://x/other", 200), None)

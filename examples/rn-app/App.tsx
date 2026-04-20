@@ -44,7 +44,7 @@ export default function App() {
     <View style={styles.container}>
       <Text style={styles.h1}>rustotron demo</Text>
       <Text style={styles.help}>
-        Make sure `rustotron` is running on 127.0.0.1:9091, then tap a button.
+        Make sure `rustotron` is running on 127.0.0.1:9090, then tap a button.
       </Text>
 
       <View style={styles.btns}>

@@ -123,6 +123,10 @@ pub fn map_key(
         KeyCode::Char('4') => Some(AppEvent::ToggleMethod("DELETE")),
         KeyCode::Char('5') => Some(AppEvent::ToggleMethod("PATCH")),
 
+        // Reset every filter (url + method + status) in one stroke.
+        // Uppercase `X` so lowercase `x` stays free.
+        KeyCode::Char('X') => Some(AppEvent::ClearAllFilters),
+
         // Toggle native mouse behaviour (text selection) vs rustotron's
         // hit-testing. Uppercase `M` so lowercase `m` is free for a
         // future menu.
@@ -326,6 +330,16 @@ mod tests {
             map_key(ev, false, false, false),
             Some(AppEvent::ToggleStatus(StatusClass::ServerError))
         );
+    }
+
+    #[test]
+    fn uppercase_x_clears_all_filters() {
+        assert_eq!(
+            map_key(k(KeyCode::Char('X')), false, false, false),
+            Some(AppEvent::ClearAllFilters)
+        );
+        // Lowercase x stays unbound so a future feature can claim it.
+        assert_eq!(map_key(k(KeyCode::Char('x')), false, false, false), None);
     }
 
     #[test]

@@ -15,10 +15,12 @@
 //! `docs/decisions/003-protocol-reality.md` for the mental model.
 
 pub mod api_events;
+pub mod body;
 pub mod handshake;
 pub mod messages;
 pub mod repair;
 
 pub use api_events::{ApiRequestSide, ApiResponsePayload, ApiResponseSide};
+pub use body::{Body, MAX_STORED_BODY_BYTES};
 pub use handshake::ClientIntroPayload;
 pub use messages::{CodecError, Envelope, Message, decode, encode};

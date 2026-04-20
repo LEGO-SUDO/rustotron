@@ -348,7 +348,7 @@ mod tests {
                 assert!(p.request.headers.is_none(), "null-sentinel → None");
                 assert!(p.request.params.is_none());
                 assert!(p.response.headers.is_none());
-                assert_eq!(p.response.body.as_str(), Some("pong"));
+                assert_eq!(p.response.body.as_string_literal().as_deref(), Some("pong"));
             }
             other => panic!("expected ApiResponse, got {other:?}"),
         }

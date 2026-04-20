@@ -31,6 +31,13 @@ pub enum Action {
     FocusPane(PaneId),
     /// Trigger the "copy cURL" button in the detail pane.
     CopyCurl,
+    /// Copy a specific visible-list row as cURL. Used by the `[y]` glyph
+    /// at the end of each list row — lets users copy without first
+    /// selecting the row.
+    CopyRowAsCurl(usize),
+    /// Reset every filter (URL + methods + status classes) in one shot.
+    /// Bound to the `[clear filters]` chip when the filter bar is dirty.
+    ClearAllFilters,
     /// Begin filter URL input mode (clicking on `[url]` chip).
     BeginFilterInput,
     /// Toggle the named method chip.
@@ -90,6 +97,8 @@ fn resolve_click(col: u16, row: u16, regions: &[HitRegion]) -> Option<AppEvent> 
                 Action::SelectRow(idx) => AppEvent::SelectRow(idx),
                 Action::FocusPane(pane) => AppEvent::FocusPane(pane),
                 Action::CopyCurl => AppEvent::CopyCurl,
+                Action::CopyRowAsCurl(idx) => AppEvent::CopyCurlForRow(idx),
+                Action::ClearAllFilters => AppEvent::ClearAllFilters,
                 Action::BeginFilterInput => AppEvent::BeginFilterInput,
                 Action::ToggleMethod(m) => AppEvent::ToggleMethod(m),
                 Action::ToggleStatus(c) => AppEvent::ToggleStatus(c),

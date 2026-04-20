@@ -5,17 +5,19 @@
 //! response halves — see `docs/protocol.md` §5.3 and ADR-003 §F-1.
 
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use std::collections::HashMap;
+
+use super::body::Body;
 
 /// A complete HTTP exchange as observed by the RN networking plugin.
 ///
 /// All nullable fields (`method`, header maps, `duration`) are typed as
 /// `Option` because the upstream source explicitly permits them to be
-/// missing (ADR-003 §F-5). The bodies (`request.data`, `response.body`) stay
-/// as `serde_json::Value` to absorb parsed JSON, raw strings, or the
-/// `"~~~ skipped ~~~"` sentinel that Reactotron substitutes for skipped
-/// content types (ADR-003 §F-4).
+/// missing (ADR-003 §F-5). Bodies (`request.data`, `response.body`) are
+/// stored as [`Body`] — compact JSON text capped at
+/// [`super::MAX_STORED_BODY_BYTES`] so a multi-MB response can't blow
+/// the ring buffer. Lazy-parsed back to a `Value` on display via
+/// `body.as_value()`.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct ApiResponsePayload {
     /// Milliseconds between `XMLHttpRequest.send()` and the response
@@ -38,8 +40,8 @@ pub struct ApiRequestSide {
     pub method: Option<String>,
     /// Body the app passed to `XMLHttpRequest.send()`. Often a JSON string,
     /// sometimes an object, occasionally a Reactotron sentinel.
-    #[serde(default, skip_serializing_if = "Value::is_null")]
-    pub data: Value,
+    #[serde(default, skip_serializing_if = "Body::is_null")]
+    pub data: Body,
     /// Request headers, if the plugin could read them.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub headers: Option<HashMap<String, String>>,
@@ -57,13 +59,14 @@ pub struct ApiResponseSide {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub headers: Option<HashMap<String, String>>,
     /// Response body — parsed JSON, raw string, or `"~~~ skipped ~~~"`.
-    #[serde(default, skip_serializing_if = "Value::is_null")]
-    pub body: Value,
+    #[serde(default, skip_serializing_if = "Body::is_null")]
+    pub body: Body,
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::Value;
 
     #[test]
     fn decodes_realistic_exchange() {
@@ -86,10 +89,8 @@ mod tests {
         assert_eq!(payload.duration, Some(142.7));
         assert_eq!(payload.request.method.as_deref(), Some("POST"));
         assert_eq!(payload.response.status, 200);
-        assert_eq!(
-            payload.response.body.get("token").and_then(Value::as_str),
-            Some("xyz")
-        );
+        let body_value = payload.response.body.as_value().unwrap();
+        assert_eq!(body_value.get("token").and_then(Value::as_str), Some("xyz"));
     }
 
     #[test]
@@ -112,7 +113,7 @@ mod tests {
         }"#;
         let payload: ApiResponsePayload = serde_json::from_str(json).unwrap();
         assert_eq!(
-            payload.response.body.as_str(),
+            payload.response.body.as_string_literal().as_deref(),
             Some("~~~ skipped ~~~"),
             "sentinel strings pass through verbatim (ADR-003 §F-4)"
         );

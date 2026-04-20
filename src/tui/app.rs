@@ -91,7 +91,7 @@ pub struct App {
     pub detail_scroll: u16,
     /// Which pane currently has focus.
     pub focused: PaneId,
-    /// Address string shown in the status bar, e.g. `ws://127.0.0.1:9091`.
+    /// Address string shown in the status bar, e.g. `ws://127.0.0.1:9090`.
     pub listen_addr: String,
     /// Live connection state — client ids connected, device names if known.
     pub connections: ConnectionState,
@@ -138,7 +138,53 @@ pub struct App {
     /// the terminal handles mouse events natively — most importantly,
     /// text selection and copy work again. Toggle at runtime with `M`.
     pub mouse_capture: bool,
+    /// Optional transient toast message — shown overlaid on the status
+    /// bar for ~2 s after a user-triggered action (cURL copied,
+    /// clipboard unavailable, filters cleared, etc.). Cleared by
+    /// [`App::tick_toast`] when it expires.
+    pub current_toast: Option<Toast>,
 }
+
+/// Short-lived user-facing message shown on top of the status bar after
+/// an action. Styled by [`ToastKind`]. Created via
+/// [`App::show_toast`] and expired by [`App::tick_toast`].
+#[derive(Debug, Clone)]
+pub struct Toast {
+    /// The line of text to display.
+    pub message: String,
+    /// Controls colour / accent glyph.
+    pub kind: ToastKind,
+    /// Wall-clock instant after which the toast should be cleared.
+    pub expires_at: std::time::Instant,
+}
+
+/// Severity of a toast. Drives the accent glyph + colour in the render
+/// path; no behavioural implications.
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum ToastKind {
+    /// Green ✓. Action succeeded.
+    Success,
+    /// Red ✗. Action failed — usually with a hint about the fallback.
+    Error,
+    /// Blue ·. Neutral informational message.
+    Info,
+}
+
+impl ToastKind {
+    /// Leading glyph shown before the message text.
+    #[must_use]
+    pub const fn glyph(self) -> &'static str {
+        match self {
+            Self::Success => "✓",
+            Self::Error => "✗",
+            Self::Info => "·",
+        }
+    }
+}
+
+/// How long a toast stays visible before auto-clearing. Short enough
+/// to not clutter the UI, long enough to read a one-line message.
+pub const TOAST_TTL: std::time::Duration = std::time::Duration::from_millis(2200);
 
 impl App {
     /// Construct a freshly-initialised app.
@@ -168,6 +214,30 @@ impl App {
             paused: false,
             confirm_clear_mode: false,
             mouse_capture: true,
+            current_toast: None,
+        }
+    }
+
+    /// Post a toast message that will auto-expire after [`TOAST_TTL`].
+    /// Replaces any toast currently visible — newer actions always win.
+    pub fn show_toast(&mut self, message: impl Into<String>, kind: ToastKind) {
+        self.current_toast = Some(Toast {
+            message: message.into(),
+            kind,
+            expires_at: std::time::Instant::now() + TOAST_TTL,
+        });
+        self.mark_dirty();
+    }
+
+    /// Clear the toast if it has expired. Called on every tick by the
+    /// TUI main loop so expired toasts disappear without needing a key
+    /// press to trigger the check.
+    pub fn tick_toast(&mut self) {
+        if let Some(t) = self.current_toast.as_ref() {
+            if std::time::Instant::now() >= t.expires_at {
+                self.current_toast = None;
+                self.mark_dirty();
+            }
         }
     }
 
@@ -360,6 +430,27 @@ impl App {
         self.rebuild_visible();
     }
 
+    /// Reset every filter (URL substring, method chips, status chips,
+    /// any pending draft) in one shot. Pause state is left untouched —
+    /// pausing and filtering are distinct concerns.
+    pub fn clear_all_filters(&mut self) {
+        let was_active = !self.filter.url_substring.is_empty()
+            || !self.filter.methods.is_empty()
+            || !self.filter.status_classes.is_empty()
+            || self.filter_input_mode
+            || !self.filter_draft.is_empty();
+        self.filter = FilterState::default();
+        self.filter_draft.clear();
+        self.filter_input_mode = false;
+        self.rebuild_visible();
+        if was_active {
+            // rebuild_visible already marks dirty; the extra nudge
+            // guarantees the status bar re-renders when the only
+            // observable change is the filter summary line.
+            self.mark_dirty();
+        }
+    }
+
     /// Toggle the pause flag.
     pub fn toggle_pause(&mut self) {
         self.paused = !self.paused;
@@ -407,7 +498,6 @@ impl App {
 mod tests {
     use super::*;
     use crate::protocol::{ApiRequestSide, ApiResponsePayload, ApiResponseSide};
-    use serde_json::Value;
 
     fn sample(url: &str) -> Request {
         sample_full(url, "GET", 200)
@@ -419,14 +509,14 @@ mod tests {
             request: ApiRequestSide {
                 url: url.to_string(),
                 method: Some(method.to_string()),
-                data: Value::Null,
+                data: crate::protocol::Body::null(),
                 headers: None,
                 params: None,
             },
             response: ApiResponseSide {
                 status,
                 headers: None,
-                body: Value::Null,
+                body: crate::protocol::Body::null(),
             },
         };
         Request::complete(exchange, None)
@@ -434,7 +524,7 @@ mod tests {
 
     #[test]
     fn new_app_has_no_rows_and_is_dirty() {
-        let app = App::new("ws://127.0.0.1:9091", false);
+        let app = App::new("ws://127.0.0.1:9090", false);
         assert!(app.rows.is_empty());
         assert!(app.visible.is_empty());
         assert_eq!(app.list_state.selected(), Some(0));
@@ -561,6 +651,38 @@ mod tests {
         app.filter.url_substring = "login".to_string();
         app.rebuild_visible();
         assert_eq!(app.visible_rows().len(), 1);
+    }
+
+    #[test]
+    fn clear_all_filters_resets_url_methods_and_status_but_not_pause() {
+        let mut app = App::new("", false);
+        app.set_rows(vec![
+            sample_full("https://api/login", "GET", 200),
+            sample_full("https://api/logout", "POST", 404),
+        ]);
+        app.toggle_method("POST");
+        app.toggle_status_class(StatusClass::ClientError);
+        app.filter.url_substring = "log".to_string();
+        app.rebuild_visible();
+        app.paused = true;
+        assert_eq!(app.visible_rows().len(), 1);
+
+        app.clear_all_filters();
+
+        assert!(app.filter.methods.is_empty());
+        assert!(app.filter.status_classes.is_empty());
+        assert!(app.filter.url_substring.is_empty());
+        assert!(app.filter_draft.is_empty());
+        assert!(!app.filter_input_mode);
+        assert_eq!(
+            app.visible_rows().len(),
+            2,
+            "all rows should be visible after clearing filters"
+        );
+        assert!(
+            app.paused,
+            "clear_all_filters must not touch the pause flag"
+        );
     }
 
     #[test]

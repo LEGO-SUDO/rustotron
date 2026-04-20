@@ -252,14 +252,14 @@ fn build_exchange(i: usize, spec: &Spec) -> ApiResponsePayload {
         request: ApiRequestSide {
             url: spec.url.to_string(),
             method: Some(spec.method.to_string()),
-            data: (spec.body)(),
+            data: crate::protocol::Body::from_value(&(spec.body)()),
             headers: Some(req_headers),
             params: None,
         },
         response: ApiResponseSide {
             status: spec.status,
             headers: Some(resp_headers),
-            body: (spec.body)(),
+            body: crate::protocol::Body::from_value(&(spec.body)()),
         },
     }
 }

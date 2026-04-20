@@ -29,6 +29,7 @@ crossterm = { version = "0.29.0", features = ["event-stream"] }
 directories-next = "2.0.0"
 figment = { version = "0.10.19", features = ["toml", "env"] }
 futures-util = "0.3.32"
+memory-stats = "1.2.0"
 ratatui = "0.29.0"
 rmcp = { version = "=1.5.0", features = ["server", "transport-io"] }
 schemars = "1.2.1"

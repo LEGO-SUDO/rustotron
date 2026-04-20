@@ -232,7 +232,7 @@ fn push_body_section<'a>(
     lines: &mut Vec<Line<'a>>,
     title: &str,
     id: SectionId,
-    value: &serde_json::Value,
+    value: &crate::protocol::Body,
     app: &App,
     plain: bool,
 ) {
@@ -281,14 +281,14 @@ mod tests {
                 request: ApiRequestSide {
                     url: "https://x".into(),
                     method: Some("GET".into()),
-                    data: Value::Null,
+                    data: crate::protocol::Body::null(),
                     headers: None,
                     params: None,
                 },
                 response: ApiResponseSide {
                     status: 200,
                     headers: None,
-                    body: json!({"ok": true}),
+                    body: crate::protocol::Body::from_value(&json!({"ok": true})),
                 },
             },
             None,
@@ -305,9 +305,16 @@ mod tests {
     #[test]
     fn pretty_body_string_falls_back_to_request_body_if_response_is_empty() {
         let mut r = sample();
-        r.exchange.response.body = Value::Null;
-        r.exchange.request.data = json!({"only": "in_req"});
+        r.exchange.response.body = crate::protocol::Body::null();
+        r.exchange.request.data = crate::protocol::Body::from_value(&json!({"only": "in_req"}));
         let s = pretty_body_string(&r);
         assert!(s.contains("\"only\""));
+    }
+
+    // Silence unused-import warning now that Value is only used in
+    // bodies above via the typed helpers.
+    #[allow(dead_code)]
+    fn _uses_value(v: &Value) -> &Value {
+        v
     }
 }

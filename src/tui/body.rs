@@ -1,26 +1,55 @@
 //! Body rendering helpers.
 //!
-//! Pretty-prints a `serde_json::Value` as a single string and truncates
-//! oversize payloads so the detail pane stays responsive. Separated from
+//! Pretty-prints a stored [`Body`] for the detail pane and truncates
+//! oversize payloads so the render stays responsive. Separated from
 //! `view::detail` so the logic is unit-testable without a ratatui
 //! `Buffer`.
+//!
+//! Note: the *store* caps bodies at `MAX_STORED_BODY_BYTES` (256 KB) to
+//! keep memory bounded. `DEFAULT_BODY_LIMIT` here is the *display*
+//! limit — how much we'll actually render inside the detail pane before
+//! hinting at the full-view modal.
 
 use serde_json::Value;
+
+use crate::protocol::Body;
 
 /// One megabyte. Bodies larger than this get truncated in the detail
 /// pane with a hint to open the full-view modal.
 pub const DEFAULT_BODY_LIMIT: usize = 1_048_576;
 
-/// Pretty-print a JSON value as a string. Handles the common "body is a
-/// JSON string that itself contains JSON" case by re-parsing.
+/// Pretty-print a stored [`Body`] as a string. Handles null, stringified-JSON,
+/// and truncated bodies cleanly.
 #[must_use]
-pub fn pretty_json_string(v: &Value) -> String {
+pub fn pretty_json_string(body: &Body) -> String {
+    if body.is_null() {
+        return "(empty)".to_string();
+    }
+    // Lazy parse: only now, on detail render, do we turn the stored
+    // text into a Value tree. Freed after the string is built.
+    match body.as_value() {
+        Some(Value::String(s)) => {
+            if let Ok(inner) = serde_json::from_str::<Value>(&s) {
+                return pretty_json_string_value(&inner);
+            }
+            s
+        }
+        Some(other) => pretty_json_string_value(&other),
+        None => {
+            // Body was truncated or non-JSON — show the raw text (plus
+            // truncation marker if present).
+            body.as_pretty_string().into_owned()
+        }
+    }
+}
+
+fn pretty_json_string_value(v: &Value) -> String {
     if v.is_null() {
         return "(empty)".to_string();
     }
     if let Some(s) = v.as_str() {
         if let Ok(inner) = serde_json::from_str::<Value>(s) {
-            return pretty_json_string(&inner);
+            return pretty_json_string_value(&inner);
         }
         return s.to_string();
     }
@@ -81,13 +110,13 @@ mod tests {
 
     #[test]
     fn pretty_json_string_handles_null() {
-        assert_eq!(pretty_json_string(&Value::Null), "(empty)");
+        assert_eq!(pretty_json_string(&Body::null()), "(empty)");
     }
 
     #[test]
     fn pretty_json_string_reparses_stringified_json() {
-        let v = Value::String(r#"{"a":1}"#.to_string());
-        let out = pretty_json_string(&v);
+        let b = Body::from_value(&Value::String(r#"{"a":1}"#.to_string()));
+        let out = pretty_json_string(&b);
         assert!(out.contains("\"a\""));
         assert!(out.contains("1"));
         assert!(out.contains('\n'));
@@ -95,7 +124,7 @@ mod tests {
 
     #[test]
     fn pretty_json_string_preserves_plain_strings() {
-        let v = Value::String("not json at all".to_string());
-        assert_eq!(pretty_json_string(&v), "not json at all");
+        let b = Body::from_value(&Value::String("not json at all".to_string()));
+        assert_eq!(pretty_json_string(&b), "not json at all");
     }
 }

@@ -183,7 +183,6 @@ mod tests {
     use super::*;
     use crate::bus::{Event, new_bus};
     use crate::protocol::{ApiRequestSide, ApiResponsePayload, ApiResponseSide};
-    use serde_json::Value;
     use std::collections::HashMap;
     use tokio::sync::broadcast::error::TryRecvError;
 
@@ -197,14 +196,14 @@ mod tests {
             request: ApiRequestSide {
                 url: url.to_string(),
                 method: Some("GET".to_string()),
-                data: Value::Null,
+                data: crate::protocol::Body::null(),
                 headers: Some(req_headers),
                 params: None,
             },
             response: ApiResponseSide {
                 status,
                 headers: None,
-                body: Value::Null,
+                body: crate::protocol::Body::null(),
             },
         }
     }

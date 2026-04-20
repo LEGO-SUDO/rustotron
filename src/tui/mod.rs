@@ -163,6 +163,9 @@ async fn run_loop(
     let mut current_mouse_capture = true;
 
     loop {
+        // Expire stale toast before checking dirty — so the frame we draw
+        // next never shows a toast past its TTL.
+        app.tick_toast();
         if app.needs_redraw() {
             terminal.draw(|frame| view::draw(frame, &mut app, &theme))?;
             app.mark_drawn();
@@ -250,10 +253,28 @@ async fn handle_bus(ev: BusEvent, app: &mut App, store: &StoreHandle) {
 }
 
 async fn apply_app_event(ev: AppEvent, app: &mut App, store: &StoreHandle, sensitive: &[String]) {
+    use self::event::PaneId;
     match ev {
         AppEvent::Quit => app.quit(),
-        AppEvent::ScrollDown => app.scroll_list_down(),
-        AppEvent::ScrollUp => app.scroll_list_up(),
+        // Pane-aware scroll. `j`/`k`/↑/↓ route to whichever pane is
+        // focused — list pane moves the selection, detail pane scrolls
+        // the response body. PgUp/PgDn + Shift+J/K remain explicit
+        // detail-scroll shortcuts so users can scroll the body without
+        // leaving list focus.
+        AppEvent::ScrollDown => {
+            if app.focused == PaneId::Detail {
+                app.scroll_detail_down();
+            } else {
+                app.scroll_list_down();
+            }
+        }
+        AppEvent::ScrollUp => {
+            if app.focused == PaneId::Detail {
+                app.scroll_detail_up();
+            } else {
+                app.scroll_list_up();
+            }
+        }
         AppEvent::DetailScrollDown => app.scroll_detail_down(),
         AppEvent::DetailScrollUp => app.scroll_detail_up(),
         AppEvent::NextPane => {
@@ -292,6 +313,33 @@ async fn apply_app_event(ev: AppEvent, app: &mut App, store: &StoreHandle, sensi
         AppEvent::CopyCurlRaw => {
             copy_selected_curl(app, CurlSecretsMode::Raw, store, sensitive).await;
         }
+        AppEvent::CopyCurlForRow(idx) => {
+            // Copy a specific visible row WITHOUT first moving the
+            // selection. Runs through the same redacted-mode pipeline as
+            // the `y` key — the cached redacted row is authoritative.
+            if let Some(req) = app.visible_rows().get(idx).cloned() {
+                let cmd = curl_command(&req, CurlSecretsMode::Redacted, sensitive);
+                match copy_to_clipboard(&cmd) {
+                    Ok(()) => {
+                        tracing::info!(row = idx, "copied cURL for row");
+                        app.show_toast("cURL copied (redacted)", app::ToastKind::Success);
+                    }
+                    Err(e) => {
+                        tracing::warn!(
+                            error = %e,
+                            cmd = %cmd,
+                            "clipboard unavailable; cURL dropped to log"
+                        );
+                        app.show_toast(
+                            format!("clipboard unavailable ({e}) — see log file"),
+                            app::ToastKind::Error,
+                        );
+                    }
+                }
+            } else {
+                app.show_toast("no row at that index", app::ToastKind::Error);
+            }
+        }
 
         AppEvent::BeginFilterInput => app.begin_filter_input(),
         AppEvent::CommitFilterInput => app.commit_filter_input(),
@@ -300,6 +348,10 @@ async fn apply_app_event(ev: AppEvent, app: &mut App, store: &StoreHandle, sensi
         AppEvent::FilterBackspace => app.pop_filter_char(),
         AppEvent::ToggleMethod(m) => app.toggle_method(m),
         AppEvent::ToggleStatus(c) => app.toggle_status_class(c),
+        AppEvent::ClearAllFilters => {
+            app.clear_all_filters();
+            app.show_toast("filters cleared", app::ToastKind::Info);
+        }
         AppEvent::TogglePause => {
             app.toggle_pause();
             // Reflect the new state into the store so incoming WS frames
@@ -360,29 +412,43 @@ async fn copy_selected_curl(
         CurlSecretsMode::Redacted => app.selected_request().cloned(),
         CurlSecretsMode::Raw => {
             let Some(id) = app.selected_request().map(|r| r.id) else {
+                app.show_toast("no row selected", app::ToastKind::Error);
                 return;
             };
             match store.get(id, StoreSecretsMode::Raw).await {
                 Ok(row) => row,
                 Err(e) => {
                     tracing::warn!(error = %e, "could not fetch raw row for cURL");
+                    app.show_toast("store unavailable — cURL not copied", app::ToastKind::Error);
                     return;
                 }
             }
         }
     };
     let Some(req) = req_owned else {
+        app.show_toast("no row selected", app::ToastKind::Error);
         return;
     };
     let cmd = curl_command(&req, mode, sensitive);
+    let label = match mode {
+        CurlSecretsMode::Redacted => "cURL copied (redacted)",
+        CurlSecretsMode::Raw => "cURL copied (raw headers)",
+    };
     match copy_to_clipboard(&cmd) {
         Ok(()) => {
-            tracing::info!("copied cURL to clipboard");
+            tracing::info!(mode = ?mode, "copied cURL to clipboard");
+            app.show_toast(label, app::ToastKind::Success);
         }
         Err(e) => {
-            // Headless CI / no clipboard — we must never panic here.
-            // Print the cURL to stderr so the user can copy it manually.
-            eprintln!("rustotron: clipboard unavailable ({e}); cURL below:\n{cmd}");
+            // Headless CI / no clipboard — NEVER eprintln here; we're
+            // inside the alt-screen and any stderr write would corrupt
+            // the render. The cURL command is logged to the file via
+            // tracing at debug level for recovery.
+            tracing::warn!(error = %e, cmd = %cmd, "clipboard unavailable; cURL dropped to log");
+            app.show_toast(
+                format!("clipboard unavailable ({e}) — see log file"),
+                app::ToastKind::Error,
+            );
         }
     }
 }
@@ -457,8 +523,8 @@ mod tests {
 
     #[test]
     fn tui_config_live_has_addr() {
-        let c = TuiConfig::live("ws://127.0.0.1:9091");
-        assert_eq!(c.listen_addr, "ws://127.0.0.1:9091");
+        let c = TuiConfig::live("ws://127.0.0.1:9090");
+        assert_eq!(c.listen_addr, "ws://127.0.0.1:9090");
         assert!(!c.mock_mode);
     }
 
@@ -466,5 +532,115 @@ mod tests {
     fn tui_config_mock_flags_mock_mode() {
         let c = TuiConfig::mock();
         assert!(c.mock_mode);
+    }
+
+    // ── Pane-aware scroll ──────────────────────────────────────────
+    // Exercises apply_app_event's ScrollDown/ScrollUp routing without
+    // spinning up the tokio runtime or a real store.
+
+    use crate::bus::new_bus;
+    use crate::store::{self, StoreConfig};
+
+    async fn fixture() -> (
+        App,
+        store::StoreHandle,
+        tokio_util::sync::CancellationToken,
+        tokio::task::JoinHandle<()>,
+    ) {
+        use crate::protocol::{ApiRequestSide, ApiResponsePayload, ApiResponseSide};
+
+        let bus = new_bus(16);
+        let token = tokio_util::sync::CancellationToken::new();
+        let task = store::spawn(StoreConfig::default(), bus.clone(), token.clone());
+        let handle = task.handle.clone();
+
+        let mut app = App::new("test", false);
+        // Seed two rows so list-scroll has somewhere to move.
+        let mut rows = Vec::new();
+        for i in 0..3u32 {
+            let exchange = ApiResponsePayload {
+                duration: Some(10.0),
+                request: ApiRequestSide {
+                    url: format!("https://x/{i}"),
+                    method: Some("GET".to_string()),
+                    data: crate::protocol::Body::null(),
+                    headers: None,
+                    params: None,
+                },
+                response: ApiResponseSide {
+                    status: 200,
+                    headers: None,
+                    body: crate::protocol::Body::null(),
+                },
+            };
+            rows.push(store::Request::complete(exchange, None));
+        }
+        app.set_rows(rows);
+        (app, handle, token, task.join)
+    }
+
+    #[tokio::test]
+    async fn scroll_down_with_list_focused_moves_selection_not_detail() {
+        let (mut app, store, token, join) = fixture().await;
+        app.focus(event::PaneId::List);
+        let before_sel = app.list_state.selected();
+        let before_detail = app.detail_scroll;
+
+        apply_app_event(AppEvent::ScrollDown, &mut app, &store, &[]).await;
+
+        assert_ne!(
+            app.list_state.selected(),
+            before_sel,
+            "list selection should advance when list is focused"
+        );
+        assert_eq!(
+            app.detail_scroll, before_detail,
+            "detail scroll should NOT change when list is focused"
+        );
+
+        token.cancel();
+        let _ = join.await;
+    }
+
+    #[tokio::test]
+    async fn scroll_down_with_detail_focused_scrolls_body_not_selection() {
+        let (mut app, store, token, join) = fixture().await;
+        app.focus(event::PaneId::Detail);
+        let before_sel = app.list_state.selected();
+        let before_detail = app.detail_scroll;
+
+        apply_app_event(AppEvent::ScrollDown, &mut app, &store, &[]).await;
+
+        assert_eq!(
+            app.list_state.selected(),
+            before_sel,
+            "list selection should stay put when detail is focused"
+        );
+        assert!(
+            app.detail_scroll > before_detail,
+            "detail scroll should advance when detail is focused"
+        );
+
+        token.cancel();
+        let _ = join.await;
+    }
+
+    #[tokio::test]
+    async fn pgdn_scrolls_detail_regardless_of_focus() {
+        let (mut app, store, token, join) = fixture().await;
+        app.focus(event::PaneId::List);
+        let before = app.detail_scroll;
+
+        // Explicit detail-scroll shortcut — should work even when the
+        // list pane is the focused one.
+        apply_app_event(AppEvent::DetailScrollDown, &mut app, &store, &[]).await;
+
+        assert!(
+            app.detail_scroll > before,
+            "PgDn / Shift+J must scroll the detail body from any focus"
+        );
+
+        token.cancel();
+        let _ = join.await;
     }
 }

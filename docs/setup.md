@@ -68,7 +68,7 @@ Reactotron
   .configure({
     name: 'my-awesome-app',
     host: '127.0.0.1',   // or your Mac's LAN IP on a real device
-    port: 9091,           // rustotron default. Use 9090 to target upstream Reactotron.
+    port: 9090,           // rustotron default — same port as Reactotron, so existing apps work unchanged.
   })
   .use(networking())
   .connect();
@@ -103,7 +103,7 @@ rustotron
 ```
 
 You'll see the TUI with an empty request list and
-`listening on ws://127.0.0.1:9091 | clients: 0 | rows: 0` in the status
+`listening on ws://127.0.0.1:9090 | clients: 0 | rows: 0` in the status
 bar.
 
 ```bash
@@ -146,19 +146,19 @@ Claude Code / Cursor config snippets live in `docs/mcp.md`.
    (`ipconfig getifaddr en0`) and start rustotron with `--host 0.0.0.0`.
 2. Inside tmux? Enable mouse capture: `set -g mouse on` in `~/.tmux.conf`.
 
-### "Port 9091 is in use"
+### "Port 9090 is in use"
 
 Another rustotron / Reactotron / random process already owns it:
 
 ```bash
 rustotron --port 9092
-# then in ReactotronConfig.ts, change port: 9091 → 9092
+# then in ReactotronConfig.ts, change port: 9090 → 9092
 ```
 
 Or find the culprit:
 
 ```bash
-lsof -iTCP -sTCP:LISTEN -n -P | grep 9091
+lsof -iTCP -sTCP:LISTEN -n -P | grep 9090
 ```
 
 ### "Screenshot-safe defaults"
@@ -190,7 +190,7 @@ Rustotron reads `$XDG_CONFIG_HOME/rustotron/config.toml` (falls back to
 defaults matching `rustotron config show`:
 
 ```toml
-port = 9091
+port = 9090
 host = "127.0.0.1"
 capacity = 500                       # ring-buffer size, must be ≥ 1
 ping-interval-ms = 30000              # must be ≥ 1

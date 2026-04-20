@@ -14,7 +14,7 @@ package versions and where things might drift.
 ## TL;DR
 
 - One WebSocket connection per RN client. Default port `9090` upstream;
-  rustotron defaults to `9091` so both can run at once.
+  rustotron defaults to `9090` so both can run at once.
 - Text frames, one JSON object per frame. No binary frames. No
   newline-delimited batching inside a frame.
 - Client speaks first with `client.intro`. Server replies with `setClientId`
@@ -41,7 +41,7 @@ package versions and where things might drift.
 | Aspect | Value |
 |---|---|
 | Protocol | `ws://` (default). `wss://` supported by upstream server when configured with PFX or cert/key. |
-| Default port | `9090` (Reactotron). **rustotron uses `9091`** so we coexist (PRD FR-1). |
+| Default port | `9090` (Reactotron). **rustotron uses `9090`** so we coexist (PRD FR-1). |
 | Frame type | Text only. The client serialises every message via `JSON.stringify` (`reactotron-core-client/src/serialize.ts`); server parses with `JSON.parse` (`reactotron-core-server/src/reactotron-core-server.ts:217`). |
 | Subprotocol | None. The client opens a plain `new WebSocket("ws://host:port")` (`reactotron-react-native.ts:DEFAULTS.createSocket`). No `Sec-WebSocket-Protocol` header is sent. |
 | Origin | None. RN's WebSocket implementation does not set an Origin we can rely on. Do not require it. |

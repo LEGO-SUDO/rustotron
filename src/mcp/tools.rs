@@ -102,10 +102,9 @@ pub(super) fn filter_matches(
 }
 
 /// Case-insensitive substring search across URL, request body, and
-/// response body. For string bodies matches directly; for JSON objects,
-/// arrays, numbers, and bools serialises to compact JSON and matches
-/// against that — so an agent searching for `"userId"` inside
-/// `{"userId": 42}` finds the row (M-2).
+/// response body. Body storage is already compact JSON text (see
+/// `protocol::Body`), so substring match against the stored text
+/// catches field names, scalar values, and stringified JSON alike.
 pub(super) fn text_search_matches(r: &Request, needle_lower: &str) -> bool {
     if r.exchange
         .request
@@ -115,15 +114,28 @@ pub(super) fn text_search_matches(r: &Request, needle_lower: &str) -> bool {
     {
         return true;
     }
-    if value_contains(&r.exchange.request.data, needle_lower) {
+    if body_contains(&r.exchange.request.data, needle_lower) {
         return true;
     }
-    if value_contains(&r.exchange.response.body, needle_lower) {
+    if body_contains(&r.exchange.response.body, needle_lower) {
         return true;
     }
     false
 }
 
+fn body_contains(body: &crate::protocol::Body, needle_lower: &str) -> bool {
+    if body.is_null() {
+        return false;
+    }
+    // Stored compact JSON text already contains the structural form
+    // we want to search — no re-serialisation per query.
+    body.text().to_ascii_lowercase().contains(needle_lower)
+}
+
+#[expect(
+    dead_code,
+    reason = "kept for future use if we re-add raw-Value search paths"
+)]
 fn value_contains(v: &Value, needle_lower: &str) -> bool {
     if v.is_null() {
         return false;
@@ -216,13 +228,16 @@ mod tests {
     use serde_json::Value;
 
     fn row(method: &str, url: &str, status: u16, body_str: Option<&str>) -> Request {
-        let body = body_str.map_or(Value::Null, |s| Value::String(s.to_string()));
+        let body = match body_str {
+            Some(s) => crate::protocol::Body::from_value(&Value::String(s.to_string())),
+            None => crate::protocol::Body::null(),
+        };
         let exchange = ApiResponsePayload {
             duration: Some(12.5),
             request: ApiRequestSide {
                 url: url.to_string(),
                 method: Some(method.to_string()),
-                data: Value::Null,
+                data: crate::protocol::Body::null(),
                 headers: None,
                 params: None,
             },
@@ -268,11 +283,11 @@ mod tests {
         // Agents often search for a field name or a scalar value inside
         // a structured JSON response — not a string body.
         let mut r = row("GET", "https://api.test/user", 200, None);
-        r.exchange.response.body = serde_json::json!({
+        r.exchange.response.body = crate::protocol::Body::from_value(&serde_json::json!({
             "userId": 42,
             "email": "jane@example.com",
             "tags": ["admin", "beta"],
-        });
+        }));
         assert!(text_search_matches(&r, "userid"));
         assert!(text_search_matches(&r, "jane"));
         assert!(text_search_matches(&r, "admin"));
@@ -283,8 +298,8 @@ mod tests {
     #[test]
     fn text_search_matches_array_and_number_bodies() {
         let mut r = row("POST", "https://api.test/nums", 200, None);
-        r.exchange.request.data = serde_json::json!([1, 2, 3]);
-        r.exchange.response.body = serde_json::json!(true);
+        r.exchange.request.data = crate::protocol::Body::from_value(&serde_json::json!([1, 2, 3]));
+        r.exchange.response.body = crate::protocol::Body::from_value(&serde_json::json!(true));
         assert!(text_search_matches(&r, "[1,2,3]"));
         assert!(text_search_matches(&r, "true"));
     }

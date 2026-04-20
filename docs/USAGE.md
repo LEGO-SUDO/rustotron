@@ -33,7 +33,7 @@ resulting binary is ≈ 5 MB on macOS arm64.
 cargo run --release
 ```
 
-Binds the WebSocket server on `ws://127.0.0.1:9091` and opens the
+Binds the WebSocket server on `ws://127.0.0.1:9090` and opens the
 three-pane TUI. Waits for a Reactotron client to connect (see §5 for the
 RN side).
 
@@ -74,7 +74,7 @@ Flags:
 |---|---|---|
 | `--json` | off | Emit ndjson (`{id, method, url, status, duration_ms, received_at_ms}`). Color is forced off in json mode. |
 | `--color auto|always|never` | `auto` | Applies to column output. `auto` honours `NO_COLOR` + isatty. |
-| `--port`, `--host` | 9091, 127.0.0.1 | Override the WS listen address. |
+| `--port`, `--host` | 9090, 127.0.0.1 | Override the WS listen address. |
 | `-v`/`-vv`/`-vvv` | WARN | Bump tracing verbosity (goes to stderr). |
 
 ### 2d. MCP mode — JSON-RPC over stdio, for AI agents
@@ -118,7 +118,7 @@ cargo run --release -- config path
 cargo run --release -- config show
 # # rustotron effective configuration
 # # source precedence: CLI > env > file > defaults
-# port = 9091
+# port = 9090
 # host = "127.0.0.1"
 # capacity = 500
 # sensitive-headers = ["authorization", "cookie", "set-cookie", "x-api-key", "proxy-authorization"]
@@ -179,7 +179,7 @@ mix (e.g. "click to select, then press Enter").
 ### 3c. What's in the status bar
 
 ```
- rustotron  listening on ws://127.0.0.1:9091  —  clients: 1  —  rows: 42
+ rustotron  listening on ws://127.0.0.1:9090  —  clients: 1  —  rows: 42
  q/Ctrl+C: quit · j/k or ↑/↓: nav · tab: pane · / url · 1-5 methods · …
 ```
 
@@ -211,7 +211,7 @@ Full schema, with defaults:
 
 ```toml
 # WS bind address + port.
-port = 9091
+port = 9090
 host = "127.0.0.1"
 
 # Ring-buffer capacity (must be ≥ 1). Rows beyond this evict FIFO.
@@ -285,7 +285,7 @@ Reactotron
   .configure({
     name: 'my-app',
     host: '127.0.0.1',  // or your Mac's LAN IP on a physical device
-    port: 9091,
+    port: 9090,
   })
   .use(networking())
   .connect();
@@ -365,23 +365,25 @@ Agent: get_request(id="<from above>", includeSecrets=true)
 
 ## 7. Troubleshooting
 
-### "Port 9091 is in use"
+### "Port 9090 is in use"
 
 Rustotron prints a friendly hint with the exact `lsof` command to find
 the offender:
 
 ```
-failed to bind on 127.0.0.1:9091: Address already in use
+failed to bind on 127.0.0.1:9090: Address already in use
 
 hint: another process is listening on that port. Try:
-  rustotron --port 9092
+  rustotron --port 9091
 
 Or find the culprit with:
-  lsof -iTCP -sTCP:LISTEN -n -P | grep 9091
+  lsof -iTCP -sTCP:LISTEN -n -P | grep 9090
 ```
 
-The other candidate is upstream Reactotron itself on 9090 — rustotron
-defaults to 9091 so they coexist.
+The usual culprit is **upstream Reactotron running on the same port** —
+rustotron uses `9090` by default so default-configured RN apps connect
+with zero changes, which means rustotron and Reactotron can't both own
+the port at once. Run one of them with `--port 9091` to coexist.
 
 ### "Rows appear but bodies say `~~~ skipped ~~~`"
 

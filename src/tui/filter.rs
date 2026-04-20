@@ -121,7 +121,6 @@ pub fn toggle_in_set<T: std::hash::Hash + Eq + Clone>(set: &mut HashSet<T>, valu
 mod tests {
     use super::*;
     use crate::protocol::{ApiRequestSide, ApiResponsePayload, ApiResponseSide};
-    use serde_json::Value;
 
     fn sample(url: &str, method: &str, status: u16) -> Request {
         let exchange = ApiResponsePayload {
@@ -129,14 +128,14 @@ mod tests {
             request: ApiRequestSide {
                 url: url.to_string(),
                 method: Some(method.to_string()),
-                data: Value::Null,
+                data: crate::protocol::Body::null(),
                 headers: None,
                 params: None,
             },
             response: ApiResponseSide {
                 status,
                 headers: None,
-                body: Value::Null,
+                body: crate::protocol::Body::null(),
             },
         };
         Request::complete(exchange, None)

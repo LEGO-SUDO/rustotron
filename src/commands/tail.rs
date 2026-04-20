@@ -296,21 +296,20 @@ mod tests {
 
     fn sample_row(method: &str, status: u16, duration_ms: Option<f64>, url: &str) -> Request {
         use crate::protocol::{ApiRequestSide, ApiResponsePayload, ApiResponseSide};
-        use serde_json::Value;
 
         let exchange = ApiResponsePayload {
             duration: duration_ms,
             request: ApiRequestSide {
                 url: url.to_string(),
                 method: Some(method.to_string()),
-                data: Value::Null,
+                data: crate::protocol::Body::null(),
                 headers: None,
                 params: None,
             },
             response: ApiResponseSide {
                 status,
                 headers: None,
-                body: Value::Null,
+                body: crate::protocol::Body::null(),
             },
         };
         Request::complete(exchange, None)

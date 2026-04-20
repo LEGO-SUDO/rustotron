@@ -68,7 +68,6 @@ fn redact_header_map(headers: &mut HashMap<String, String>, sensitive: &[String]
 mod tests {
     use super::*;
     use crate::protocol::{ApiRequestSide, ApiResponsePayload, ApiResponseSide};
-    use serde_json::Value;
 
     fn sample_request_with_headers(
         req_headers: HashMap<String, String>,
@@ -79,14 +78,14 @@ mod tests {
             request: ApiRequestSide {
                 url: "https://x".to_string(),
                 method: Some("GET".to_string()),
-                data: Value::Null,
+                data: crate::protocol::Body::null(),
                 headers: Some(req_headers),
                 params: None,
             },
             response: ApiResponseSide {
                 status: 200,
                 headers: Some(res_headers),
-                body: Value::Null,
+                body: crate::protocol::Body::null(),
             },
         };
         Request::complete(exchange, None)
@@ -222,14 +221,14 @@ mod tests {
                 request: ApiRequestSide {
                     url: "https://x".to_string(),
                     method: Some("GET".to_string()),
-                    data: Value::Null,
+                    data: crate::protocol::Body::null(),
                     headers: None,
                     params: None,
                 },
                 response: ApiResponseSide {
                     status: 204,
                     headers: None,
-                    body: Value::Null,
+                    body: crate::protocol::Body::null(),
                 },
             },
             None,

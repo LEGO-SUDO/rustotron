@@ -4,12 +4,12 @@ expression: rendered
 ---
  [/url]  [GET]  [POST]  [PUT]  [DELETE]  [PATCH]  [2xx]  [3xx]  [4xx]  [5xx]  [p]  [c clear]
 ┌ Requests (6/20) ─────────────────────────────┐┌ Detail ──────────────────────────────────────────────────────────────┐
-│▸ 12:00:00 POST   200   142ms /auth/login     ││Method:   POST                                                       █│
-│  12:00:06 POST   201   788ms /payments/charge││URL:      https://api.example.com/auth/login                         █│
-│  12:00:09 POST   200   356ms /search?q=reacto││Status:   200   Duration: 142ms                                      █│
-│  12:00:13 POST   500  1042ms /v2/batch/ingest││                                                                     █│
-│  12:00:15 POST   413    26ms /upload/blob    ││▾ Request Headers                                                    █│
-│  12:00:19 POST   503  2150ms /reports/generat││  Accept: application/json                                           █│
+│▸ 12:00:00 POST   200   142ms /auth/login  [y]││Method:   POST                                                       █│
+│  12:00:06 POST   201   788ms /payments/cha[y]││URL:      https://api.example.com/auth/login                         █│
+│  12:00:09 POST   200   356ms /search?q=rea[y]││Status:   200   Duration: 142ms                                      █│
+│  12:00:13 POST   500  1042ms /v2/batch/ing[y]││                                                                     █│
+│  12:00:15 POST   413    26ms /upload/blob [y]││▾ Request Headers                                                    █│
+│  12:00:19 POST   503  2150ms /reports/gene[y]││  Accept: application/json                                           █│
 │                                              ││  Authorization: Bearer super-secret-XYZ                             █│
 │                                              ││  Content-Type: application/json                                     █│
 │                                              ││                                                                     █│
@@ -40,5 +40,5 @@ expression: rendered
 │                                              ││      "id": 4218,                                                    ║│
 │                                              ││      "roles": [                                                     ║│
 └──────────────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────┘
- rustotron  mock data — 20 rows — not connected to any server · filter: POST
- q/Ctrl+C: quit · j/k or ↑/↓: nav · tab: pane · / url · 1-5 methods · Alt+1-4 status · p pause · c clear · z collapse ·
+ rustotron  mock data — 20 rows — not connected to any server · filter: POST  —  mem: 12.3 MB
+ q/Ctrl+C: quit · tab: pane · j/k or ↑/↓: nav (list) / scroll body (detail) · PgUp/PgDn: body · / url · 1-5 methods · Al

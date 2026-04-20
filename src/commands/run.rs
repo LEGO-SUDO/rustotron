@@ -138,9 +138,12 @@ fn friendly_bind_err(err: crate::server::ServerError) -> color_eyre::Report {
         crate::server::ServerError::Bind { addr, source } => {
             let mut msg = format!("failed to bind on {addr}: {source}");
             if source.kind() == std::io::ErrorKind::AddrInUse {
+                // Most common cause: upstream Reactotron is already
+                // on 9090. Suggest 9091 (side-by-side) or an arbitrary
+                // free port.
                 msg.push_str(
                     "\n\nhint: another process is listening on that port. Try:\n  \
-                     rustotron --port 9092\n\nOr find the culprit with:\n  \
+                     rustotron --port 9091\n\nOr find the culprit with:\n  \
                      lsof -iTCP -sTCP:LISTEN -n -P | grep ",
                 );
                 msg.push_str(&addr.port().to_string());

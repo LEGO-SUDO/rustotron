@@ -24,7 +24,9 @@ use crate::store::{DEFAULT_CAPACITY, default_sensitive_headers};
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case", default)]
 pub struct Config {
-    /// WS bind port. Default 9091 (coexists with Reactotron's 9090).
+    /// WS bind port. Default 9090 — same as Reactotron, so a default
+    /// `Reactotron.configure()` call in an RN app connects with zero
+    /// changes. Use `--port 9091` to run side-by-side with Reactotron.
     pub port: u16,
     /// WS bind host. Default 127.0.0.1.
     pub host: String,
@@ -182,7 +184,7 @@ mod tests {
     #[test]
     fn default_config_matches_spec() {
         let cfg = Config::default();
-        assert_eq!(cfg.port, 9091);
+        assert_eq!(cfg.port, 9090);
         assert_eq!(cfg.host, "127.0.0.1");
         assert_eq!(cfg.capacity, 500);
         assert!(

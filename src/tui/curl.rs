@@ -102,6 +102,24 @@ pub fn curl_command(req: &Request, mode: SecretsMode, sensitive: &[String]) -> S
     out
 }
 
+/// Quote-safe body string adapter for [`crate::protocol::Body`]. Handles
+/// the RN-common stringified-JSON case (e.g. `data: "{\"x\":1}"`) by
+/// returning the inner string, otherwise emits the compact JSON text
+/// we already have stored.
+fn body_as_data_string(body: &crate::protocol::Body) -> Option<String> {
+    if body.is_null() {
+        return None;
+    }
+    if let Some(inner) = body.as_string_literal() {
+        if inner.is_empty() {
+            return None;
+        }
+        return Some(inner);
+    }
+    // The stored text is already compact JSON — use as-is.
+    Some(body.text().to_string())
+}
+
 /// Copy the rendered cURL command to the system clipboard.
 ///
 /// # Errors
@@ -119,11 +137,11 @@ fn is_sensitive(name: &str, sensitive: &[String]) -> bool {
     sensitive.iter().any(|s| s.eq_ignore_ascii_case(name))
 }
 
-/// Quote-safe body string. Returns `None` for empty / null bodies. For
-/// JSON objects/arrays/numbers emits a compact JSON string; for embedded
-/// strings (the common RN case — stringified JSON) uses the string
-/// directly; for other scalars prints the `Display` form.
-fn body_as_data_string(v: &Value) -> Option<String> {
+// The old Value-based body_as_data_string is replaced by the Body-based
+// version above. Left here only so previous `use` paths compile while
+// we migrate; safe to delete once nothing references it.
+#[allow(dead_code)]
+fn body_as_data_string_legacy(v: &Value) -> Option<String> {
     if v.is_null() {
         return None;
     }
@@ -173,14 +191,14 @@ mod tests {
             request: ApiRequestSide {
                 url: url.to_string(),
                 method: Some(method.to_string()),
-                data: json!({"email": "jane@example.com"}),
+                data: crate::protocol::Body::from_value(&json!({"email": "jane@example.com"})),
                 headers: Some(headers),
                 params: None,
             },
             response: ApiResponseSide {
                 status: 200,
                 headers: None,
-                body: Value::Null,
+                body: crate::protocol::Body::null(),
             },
         };
         Request::complete(exchange, None)
@@ -209,7 +227,7 @@ mod tests {
     #[test]
     fn get_without_body_omits_data_flag() {
         let mut req = sample("https://x", "GET");
-        req.exchange.request.data = Value::Null;
+        req.exchange.request.data = crate::protocol::Body::null();
         let cmd = curl_command(&req, SecretsMode::Redacted, &default_sensitive());
         assert!(!cmd.contains("-d '"));
     }
@@ -217,7 +235,8 @@ mod tests {
     #[test]
     fn stringified_json_body_uses_the_string_as_data() {
         let mut req = sample("https://x", "POST");
-        req.exchange.request.data = Value::String(r#"{"a":1}"#.to_string());
+        req.exchange.request.data =
+            crate::protocol::Body::from_value(&Value::String(r#"{"a":1}"#.to_string()));
         let cmd = curl_command(&req, SecretsMode::Redacted, &default_sensitive());
         assert!(cmd.contains(r#"-d '{"a":1}'"#));
     }
@@ -237,7 +256,7 @@ mod tests {
     #[test]
     fn single_quote_in_url_or_value_is_escaped() {
         let mut req = sample("https://api.example.com/o'hare", "GET");
-        req.exchange.request.data = Value::Null;
+        req.exchange.request.data = crate::protocol::Body::null();
         let cmd = curl_command(&req, SecretsMode::Redacted, &default_sensitive());
         assert!(cmd.contains("o'\\''hare"));
     }
@@ -246,7 +265,7 @@ mod tests {
     fn missing_method_defaults_to_get() {
         let mut req = sample("https://x", "GET");
         req.exchange.request.method = None;
-        req.exchange.request.data = Value::Null;
+        req.exchange.request.data = crate::protocol::Body::null();
         let cmd = curl_command(&req, SecretsMode::Redacted, &default_sensitive());
         assert!(cmd.starts_with("curl -X GET "));
     }

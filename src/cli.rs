@@ -25,8 +25,10 @@ use clap::{Parser, Subcommand, ValueEnum};
     long_about = None,
 )]
 pub struct Cli {
-    /// Port the WebSocket server should bind. Default 9091 (9090 is
-    /// Reactotron's upstream port; 9091 coexists).
+    /// Port the WebSocket server should bind. Default 9090 — matches
+    /// Reactotron's wire port so default-configured RN clients connect
+    /// with no changes. Use `--port 9091` to coexist with upstream
+    /// Reactotron.
     #[arg(long, global = true)]
     pub port: Option<u16>,
 

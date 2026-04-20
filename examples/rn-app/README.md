@@ -10,7 +10,7 @@ testing rustotron against a real RN client.
 # From the repo root
 cd examples/rn-app
 npm install
-# In a separate terminal, start rustotron (default port 9091):
+# In a separate terminal, start rustotron (default port 9090):
 #   cargo run --release
 # Then:
 npx expo start --ios      # or --android, or press w for web
@@ -34,10 +34,14 @@ XHRInterceptor wires in transparently.
 
 ## Port collision
 
-The default Reactotron port is **9090**. Rustotron defaults to **9091** so
-both can run side-by-side. If you want to target upstream Reactotron
-instead, edit `src/ReactotronConfig.ts` and change `port: 9091` → `port:
-9090`.
+Rustotron and upstream Reactotron both default to port **9090** — that's
+intentional, so any RN app with a default-configured Reactotron client
+connects to rustotron without any code changes. You can only run one of
+them at a time on the default port.
+
+To run both side-by-side, start one of them with `--port 9091` and point
+this app at that port instead (edit `RUSTOTRON_PORT` in
+`src/ReactotronConfig.ts`).
 
 ## Native builds
 

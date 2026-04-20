@@ -85,10 +85,9 @@ fn api_request_response_pair_decodes_to_intro_then_complete_exchange() {
             assert_eq!(p.request.method.as_deref(), Some("POST"));
             assert_eq!(p.response.status, 200);
             assert_eq!(p.duration, Some(142.7));
+            let body = p.response.body.as_value().expect("body parses");
             assert_eq!(
-                p.response
-                    .body
-                    .get("token")
+                body.get("token")
                     .and_then(|v| v.as_str())
                     .map(|s| s.starts_with("eyJ")),
                 Some(true)

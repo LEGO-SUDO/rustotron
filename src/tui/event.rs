@@ -105,6 +105,16 @@ pub enum AppEvent {
     ConfirmClear,
     /// Dismiss the clear-confirmation modal.
     CancelClearConfirm,
+    /// Reset every filter (URL substring, method chips, status chips)
+    /// in one shot. Bound to `X` on the keyboard and to the `[clear filters]`
+    /// chip in the filter bar.
+    ClearAllFilters,
+    /// Copy the visible row at the given index as a cURL command (in
+    /// the **redacted** mode — matches the `y` keybind). Fired by
+    /// clicking the `[y]` glyph at the end of a row, so users don't
+    /// have to select first. `Y` (shift-y) still copies the currently
+    /// selected row raw.
+    CopyCurlForRow(usize),
 
     /// Toggle crossterm mouse capture. When off, the terminal handles
     /// the mouse natively so users can select text to copy. Triggered

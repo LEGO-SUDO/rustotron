@@ -3,8 +3,11 @@
 use std::net::{IpAddr, Ipv4Addr};
 use std::time::Duration;
 
-/// Default port per PRD FR-1 (9090 is Reactotron's; 9091 coexists).
-pub const DEFAULT_PORT: u16 = 9091;
+/// Default port. Matches Reactotron's wire port so RN apps that call
+/// `Reactotron.configure()` with no arguments connect with zero config
+/// changes. If you want rustotron and upstream Reactotron to coexist,
+/// start one of them with `--port 9091` (or any free port).
+pub const DEFAULT_PORT: u16 = 9090;
 
 /// Default keepalive cadence per ADR-003 §F-9.
 pub const DEFAULT_PING_INTERVAL: Duration = Duration::from_secs(30);
@@ -16,7 +19,9 @@ pub struct ServerConfig {
     /// the server on all interfaces (LAN debugging from a device on Wi-Fi)
     /// via config.
     pub host: IpAddr,
-    /// TCP port. Default 9091.
+    /// TCP port. Default 9090 (Reactotron's wire port — any RN app
+    /// with a default-configured `reactotron-react-native` client
+    /// connects with zero app-side changes).
     pub port: u16,
     /// How often the server sends WebSocket pings. We never fail a session
     /// on missing pongs (older Reactotron clients don't pong) — pings are

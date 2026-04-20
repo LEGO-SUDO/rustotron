@@ -4,7 +4,7 @@ expression: rendered
 ---
  [/url]  [GET]  [POST]  [PUT]  [DELETE]  [PATCH]  [2xx]  [3xx]  [4xx]  [5xx]  [p]  [c clear]
 ┌ Requests (1) ────────────────────────────────┐┌ Detail ──────────────────────────────────────────────────────────────┐
-│▸ 12:00:00 GET    200     5ms /large          ││Method:   GET                                                        █│
+│▸ 12:00:00 GET    200     5ms /large       [y]││Method:   GET                                                        █│
 │                                              ││URL:      https://api.example.com/large                              █│
 │                                              ││Status:   200   Duration: 5ms                                        █│
 │                                              ││                                                                     █│
@@ -18,9 +18,7 @@ expression: rendered
 │                                              ││  (none)                                                             █│
 │                                              ││                                                                     █│
 │                                              ││▾ Response Body                                                      █│
-│                                              ││  {                                                                  █│
-│                                              ││    "giant":                                                         █│
-│                                              ││"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
+│                                              ││  {"giant":"xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
 │                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
 │                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
 │                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
@@ -28,7 +26,9 @@ expression: rendered
 │                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
 │                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
 │                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
-│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
+│                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx█│
 │                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
 │                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
 │                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
@@ -40,5 +40,5 @@ expression: rendered
 │                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
 │                                              ││xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx║│
 └──────────────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────┘
- rustotron  mock data — 1 rows — not connected to any server
- q/Ctrl+C: quit · j/k or ↑/↓: nav · tab: pane · / url · 1-5 methods · Alt+1-4 status · p pause · c clear · z collapse ·
+ rustotron  mock data — 1 rows — not connected to any server  —  mem: 12.3 MB
+ q/Ctrl+C: quit · tab: pane · j/k or ↑/↓: nav (list) / scroll body (detail) · PgUp/PgDn: body · / url · 1-5 methods · Al
