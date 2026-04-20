@@ -107,3 +107,9 @@ pr-run-mode = "plan"
 # Auto-include common metadata files in tarballs so `brew install` gets
 # the license text without a second request.
 auto-includes = true
+
+# Override the global runner (used by plan/host/global-build/announce/
+# homebrew-publish jobs). cargo-dist 0.21.1 defaults to ubuntu-20.04,
+# which GitHub retired in 2025 — override to a supported LTS image.
+[workspace.metadata.dist.github-custom-runners]
+global = "ubuntu-22.04"
