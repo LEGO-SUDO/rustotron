@@ -1,6 +1,6 @@
 [package]
 name = "rustotron"
-version = "0.1.0"
+version = "0.1.0-rc.1"
 edition = "2024"
 rust-version = "1.85"
 description = "Terminal-native network inspector for React Native apps, wire-compatible with Reactotron. TUI + MCP server for AI agents."
