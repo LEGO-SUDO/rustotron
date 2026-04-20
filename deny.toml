@@ -1,0 +1,61 @@
+# cargo-deny config — license + advisory + source + ban rules.
+# Runs in CI on every PR via .github/workflows/ci.yml.
+
+[graph]
+# Targets we ship binaries for. Limits the dep graph cargo-deny analyses
+# so we don't yell about platform-specific deps that never reach our
+# build (Windows-only crates pulled in via cfg-gated transitive deps).
+targets = [
+    { triple = "x86_64-unknown-linux-gnu" },
+    { triple = "aarch64-unknown-linux-gnu" },
+    { triple = "x86_64-unknown-linux-musl" },
+    { triple = "x86_64-apple-darwin" },
+    { triple = "aarch64-apple-darwin" },
+]
+
+[advisories]
+# Use the default RustSec database. Fail on any unmaintained / yanked
+# / vulnerability advisory.
+db-path = "~/.cargo/advisory-db"
+db-urls = ["https://github.com/rustsec/advisory-db"]
+yanked = "deny"
+ignore = [
+    # Add advisory IDs here only with a code-review note explaining why
+    # the risk is accepted. Keep the list short — re-evaluate quarterly.
+]
+
+[licenses]
+# Allow-list approach. Anything not on this list trips a CI failure;
+# add to the list with a justification when you pull a new dep.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "MPL-2.0",
+    "Unicode-3.0",
+    "Unicode-DFS-2016",
+    "Zlib",
+    "0BSD",
+    "CC0-1.0",
+]
+confidence-threshold = 0.8
+
+[bans]
+# Reject duplicate versions of the same crate beyond a small skip list.
+# Forces dependency hygiene — if two deps want different versions of
+# `syn` etc., we surface it instead of silently shipping both.
+multiple-versions = "warn"
+wildcards = "deny"
+deny = [
+    # Things we never want pulled in by transitive deps:
+    { name = "openssl", reason = "use rustls; openssl is system-link hell" },
+]
+
+[sources]
+unknown-registry = "deny"
+unknown-git = "deny"
+allow-registry = ["https://github.com/rust-lang/crates.io-index"]
+allow-git = []

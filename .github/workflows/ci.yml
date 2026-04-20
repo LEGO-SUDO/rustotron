@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  # Manual trigger so the matrix can be re-run on demand.
+  workflow_dispatch:
+
+# Cancel in-flight runs for the same ref when a new commit lands.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: short
+
+jobs:
+  # ───────────────────────────── lint ─────────────────────────────
+  # Runs on a single platform — fmt and clippy results are
+  # platform-agnostic, no need to fan them out.
+  lint:
+    name: fmt + clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install stable toolchain
+        # Pick up rust-toolchain.toml automatically; install the listed
+        # components even if cached.
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ci-lint
+      - name: cargo fmt --check
+        run: cargo fmt --all --check
+      - name: cargo clippy
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+  # ───────────────────────────── test ─────────────────────────────
+  # Matrix: stable / beta / MSRV × ubuntu / macOS. Windows is post-v1
+  # per PRD NFR-17 / OOS-9.
+  test:
+    name: test (${{ matrix.toolchain }} on ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        toolchain: [stable, beta, "1.85"] # MSRV pinned in Cargo.toml rust-version
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ${{ matrix.toolchain }}
+        uses: dtolnay/rust-toolchain@master
+        with:
+          toolchain: ${{ matrix.toolchain }}
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ci-test-${{ matrix.os }}-${{ matrix.toolchain }}
+      - name: Build (debug)
+        run: cargo build --all-targets --locked
+      - name: Test (debug)
+        # Bench harnesses don't accept --test-threads, so test --lib + --tests.
+        run: cargo test --lib --tests --locked
+      - name: Test (release)
+        # Catch optimisations that change behaviour (rare but real).
+        run: cargo test --release --lib --tests --locked
+
+  # ──────────────────────── deny / audit ────────────────────────
+  # License + advisory + ban check on every PR via cargo-deny.
+  # cargo-audit runs separately on a weekly schedule (audit.yml).
+  deny:
+    name: cargo deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check
+          # Read deny.toml at the repo root (created alongside this workflow).
+          arguments: --all-features
+
+  # ─────────────────────────── docs ─────────────────────────────
+  # Build rustdoc to catch broken intra-doc links + missing references.
+  docs:
+    name: rustdoc
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          shared-key: ci-docs
+      - name: cargo doc
+        env:
+          RUSTDOCFLAGS: "-D warnings"
+        run: cargo doc --no-deps --all-features --document-private-items
