@@ -64,3 +64,46 @@ opt-level = 3
 
 [profile.dist]
 inherits = "release"
+
+# Config for `cargo dist` — run `cargo dist init` after edits to
+# regenerate `.github/workflows/release.yml`.
+[workspace.metadata.dist]
+# Pin the cargo-dist version so the generated workflow is reproducible
+# until you opt in to an upgrade.
+cargo-dist-version = "0.21.1"
+# Host on GitHub Releases.
+ci = "github"
+# What users can install with.
+#   `shell` — `curl … | sh` one-liner attached to every release.
+#   `homebrew` — auto-updates a formula in the tap below on every tag.
+#   crates.io publishing is handled separately in the release workflow
+#   once you set the CARGO_REGISTRY_TOKEN secret (see README).
+installers = ["shell", "homebrew"]
+# Homebrew tap that cargo-dist will push a rendered formula to on every
+# release. The repo MUST exist before cutting your first tag — create it
+# with `gh repo create LEGO-SUDO/homebrew-rustotron --public`.
+tap = "LEGO-SUDO/homebrew-rustotron"
+publish-jobs = ["homebrew"]
+# Per PRD NFR-17: Linux + macOS at launch, both architectures. Windows
+# is post-v1. Linux gnu for glibc distros, musl for static Alpine /
+# scratch containers.
+targets = [
+    "aarch64-apple-darwin",
+    "x86_64-apple-darwin",
+    "x86_64-unknown-linux-gnu",
+    "aarch64-unknown-linux-gnu",
+    "x86_64-unknown-linux-musl",
+]
+# Draft the GitHub Release by default so you can review notes before
+# publishing. Flip to "auto" once you trust the pipeline.
+github-release = "auto"
+# Build in the `dist` profile (LTO + codegen-units=1 + strip, inherits
+# from release — see profile.dist above).
+# Sigstore attestations on release artifacts so users can verify
+# provenance via `gh attestation verify`.
+github-attestations = true
+# Don't re-run the full pipeline on PRs — plan mode is enough.
+pr-run-mode = "plan"
+# Auto-include common metadata files in tarballs so `brew install` gets
+# the license text without a second request.
+auto-includes = true
