@@ -4,7 +4,7 @@
 [![Crates.io](https://img.shields.io/crates/v/rustotron.svg)](https://crates.io/crates/rustotron)
 [![Downloads](https://img.shields.io/crates/d/rustotron.svg)](https://crates.io/crates/rustotron)
 [![License](https://img.shields.io/crates/l/rustotron.svg)](#license)
-[![MSRV](https://img.shields.io/badge/MSRV-1.85-blue.svg)](#)
+[![MSRV](https://img.shields.io/badge/MSRV-1.88-blue.svg)](#)
 
 > **Terminal-native network inspector for React Native apps.** Wire-compatible
 > with [Reactotron](https://github.com/infinitered/reactotron) — point your

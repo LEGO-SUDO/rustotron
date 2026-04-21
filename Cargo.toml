@@ -2,7 +2,7 @@
 name = "rustotron"
 version = "0.1.0-rc.1"
 edition = "2024"
-rust-version = "1.85"
+rust-version = "1.88"
 description = "Terminal-native network inspector for React Native apps, wire-compatible with Reactotron. TUI + MCP server for AI agents."
 authors = ["LEGO-SUDO <nakulksingh3127@gmail.com>"]
 license = "MIT OR Apache-2.0"
@@ -91,9 +91,14 @@ targets = [
     "aarch64-apple-darwin",
     "x86_64-apple-darwin",
     "x86_64-unknown-linux-gnu",
-    "aarch64-unknown-linux-gnu",
     "x86_64-unknown-linux-musl",
 ]
+# NOTE: aarch64-unknown-linux-gnu dropped for v0.1.0. syntect pulls in
+# onig_sys (Oniguruma C lib) which needs `aarch64-linux-gnu-gcc` to
+# cross-compile, but cargo-dist 0.21.1's `packages_install` on x86
+# ubuntu runners doesn't grab it. Add back in 0.1.x once we either
+# switch to a native ubuntu-22.04-arm runner or teach the matrix to
+# install gcc-aarch64-linux-gnu.
 # Draft the GitHub Release by default so you can review notes before
 # publishing. Flip to "auto" once you trust the pipeline.
 github-release = "auto"
@@ -115,5 +120,4 @@ auto-includes = true
 [workspace.metadata.dist.github-custom-runners]
 global = "ubuntu-22.04"
 x86_64-unknown-linux-gnu = "ubuntu-22.04"
-aarch64-unknown-linux-gnu = "ubuntu-22.04"
 x86_64-unknown-linux-musl = "ubuntu-22.04"
