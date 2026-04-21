@@ -1,7 +1,7 @@
 //! Header redaction for sensitive values.
 //!
 //! Rustotron stores the raw exchange. Redaction happens on the **read**
-//! side, parameterised by [`SecretsMode`](super::request::SecretsMode).
+//! side, parameterised by [`super::request::SecretsMode`].
 //! The user's casual screenshot of the TUI must not leak an
 //! `Authorization` bearer token (PRD US-5, NFR-12).
 //!

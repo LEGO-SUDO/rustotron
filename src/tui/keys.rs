@@ -78,16 +78,16 @@ pub fn map_key(
 
     // Alt+1..4 toggle status-class chips. Check before the bare `1..4`
     // fall-through below.
-    if key.modifiers.contains(KeyModifiers::ALT) {
-        if let KeyCode::Char(c) = key.code {
-            return match c {
-                '1' => Some(AppEvent::ToggleStatus(StatusClass::Success)),
-                '2' => Some(AppEvent::ToggleStatus(StatusClass::Redirect)),
-                '3' => Some(AppEvent::ToggleStatus(StatusClass::ClientError)),
-                '4' => Some(AppEvent::ToggleStatus(StatusClass::ServerError)),
-                _ => None,
-            };
-        }
+    if key.modifiers.contains(KeyModifiers::ALT)
+        && let KeyCode::Char(c) = key.code
+    {
+        return match c {
+            '1' => Some(AppEvent::ToggleStatus(StatusClass::Success)),
+            '2' => Some(AppEvent::ToggleStatus(StatusClass::Redirect)),
+            '3' => Some(AppEvent::ToggleStatus(StatusClass::ClientError)),
+            '4' => Some(AppEvent::ToggleStatus(StatusClass::ServerError)),
+            _ => None,
+        };
     }
 
     match key.code {

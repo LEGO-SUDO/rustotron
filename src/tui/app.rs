@@ -233,11 +233,11 @@ impl App {
     /// TUI main loop so expired toasts disappear without needing a key
     /// press to trigger the check.
     pub fn tick_toast(&mut self) {
-        if let Some(t) = self.current_toast.as_ref() {
-            if std::time::Instant::now() >= t.expires_at {
-                self.current_toast = None;
-                self.mark_dirty();
-            }
+        if let Some(t) = self.current_toast.as_ref()
+            && std::time::Instant::now() >= t.expires_at
+        {
+            self.current_toast = None;
+            self.mark_dirty();
         }
     }
 

@@ -10,8 +10,9 @@
 //! When the full-view modal is open (TASK-202), the detail area is
 //! replaced by the modal renderer; all other regions still render.
 //!
-//! Views push [`HitRegion`]s onto [`super::app::App::hit_regions`] during
-//! render; the main loop consults this table on the next mouse event.
+//! Views push [`super::mouse::HitRegion`]s onto
+//! [`super::app::App::hit_regions`] during render; the main loop
+//! consults this table on the next mouse event.
 //!
 //! Call [`draw`] once per frame from the main loop.
 

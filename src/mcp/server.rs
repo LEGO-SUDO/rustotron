@@ -238,12 +238,11 @@ impl RustotronMcp {
                         .get(id, mode)
                         .await
                         .map_err(|e| McpError::internal_error(e.to_string(), None))?
+                        && tools::matches_wait(&row, &pattern, method.as_deref())
                     {
-                        if tools::matches_wait(&row, &pattern, method.as_deref()) {
-                            return Ok(CallToolResult::success(vec![Content::text(
-                                tools::detail_of(&row).to_string(),
-                            )]));
-                        }
+                        return Ok(CallToolResult::success(vec![Content::text(
+                            tools::detail_of(&row).to_string(),
+                        )]));
                     }
                 }
                 Ok(Ok(_)) => continue,

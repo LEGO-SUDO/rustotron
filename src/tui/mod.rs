@@ -195,10 +195,10 @@ async fn run_loop(
                     Err(RecvError::Closed) => break,
                     Err(RecvError::Lagged(n)) => {
                         tracing::warn!(events_missed = n, "tui subscriber lagged; resyncing");
-                        if !app.paused {
-                            if let Ok(rows) = store.all(StoreSecretsMode::Redacted).await {
-                                app.set_rows(rows);
-                            }
+                        if !app.paused
+                            && let Ok(rows) = store.all(StoreSecretsMode::Redacted).await
+                        {
+                            app.set_rows(rows);
                         }
                     }
                 }

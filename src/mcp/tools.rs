@@ -14,8 +14,8 @@ use crate::store::{Request, SecretsMode, StoreError, StoreHandle};
 
 use super::schema::RequestSummary;
 
-/// Parse a `RequestId` from the UUID string shape emitted by
-/// [`RequestId::to_string`]. Returns `None` on malformed input.
+/// Parse a `RequestId` from the UUID string shape emitted by its
+/// `Display` / `to_string` impl. Returns `None` on malformed input.
 pub(super) fn parse_request_id(s: &str) -> Option<RequestId> {
     Uuid::parse_str(s).ok().map(RequestId)
 }
@@ -82,21 +82,20 @@ pub(super) fn filter_matches(
             return false;
         }
     }
-    if let Some(cls) = status_class {
-        if !status_class_matches(r.exchange.response.status, cls) {
-            return false;
-        }
+    if let Some(cls) = status_class
+        && !status_class_matches(r.exchange.response.status, cls)
+    {
+        return false;
     }
-    if let Some(needle) = url_contains {
-        if !r
+    if let Some(needle) = url_contains
+        && !r
             .exchange
             .request
             .url
             .to_ascii_lowercase()
             .contains(&needle.to_ascii_lowercase())
-        {
-            return false;
-        }
+    {
+        return false;
     }
     true
 }
