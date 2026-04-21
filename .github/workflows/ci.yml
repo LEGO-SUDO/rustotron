@@ -71,16 +71,21 @@ jobs:
   # ──────────────────────── deny / audit ────────────────────────
   # License + advisory + ban check on every PR via cargo-deny.
   # cargo-audit runs separately on a weekly schedule (audit.yml).
+  # Invoke cargo-deny directly — EmbarkStudios/cargo-deny-action runs in
+  # an Alpine/musl container where rust-toolchain.toml tries to resolve
+  # `stable-x86_64-unknown-linux-musl`, which isn't installed in that
+  # image. Running on the plain runner avoids the mismatch.
   deny:
     name: cargo deny
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: EmbarkStudios/cargo-deny-action@v2
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: taiki-e/install-action@v2
         with:
-          command: check
-          # Read deny.toml at the repo root (created alongside this workflow).
-          arguments: --all-features
+          tool: cargo-deny
+      - name: cargo deny check
+        run: cargo deny --all-features check
 
   # ─────────────────────────── docs ─────────────────────────────
   # Build rustdoc to catch broken intra-doc links + missing references.
