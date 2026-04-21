@@ -121,9 +121,11 @@ auto-includes = true
 global = "ubuntu-22.04"
 x86_64-unknown-linux-gnu = "ubuntu-22.04"
 x86_64-unknown-linux-musl = "ubuntu-22.04"
-# Split the Apple targets onto their native runners. cargo-dist 0.21.1
-# defaults both to macos-13, which sends them into the same (chronically
-# backed-up) Intel pool. macos-14 is the ARM runner — builds aarch64
-# natively (faster) and frees macos-13 for the x86_64 build alone.
-x86_64-apple-darwin = "macos-13"
+# Both Apple targets build on macos-14 (ARM). aarch64 is native; x86_64
+# is cross-compiled — Xcode's clang is a universal compiler so `--target
+# x86_64-apple-darwin` works out of the box from an ARM host, no extra
+# SDK setup needed. Chose this over macos-13 because the free Intel
+# runner pool is chronically backed up (hours of queue time), while
+# macos-14 picks up jobs within a minute.
+x86_64-apple-darwin = "macos-14"
 aarch64-apple-darwin = "macos-14"
