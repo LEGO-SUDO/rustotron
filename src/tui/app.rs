@@ -244,8 +244,17 @@ impl App {
     /// Flip the mouse-capture state. The main loop compares against the
     /// currently-applied terminal state and issues the crossterm command
     /// on change — see `tui::mod::apply_mouse_capture`.
+    ///
+    /// Posts a toast so the user sees what changed — the visual delta
+    /// is otherwise zero until they try to drag-select or click.
     pub fn toggle_mouse_capture(&mut self) {
         self.mouse_capture = !self.mouse_capture;
+        let msg = if self.mouse_capture {
+            "mouse capture ON — clicks/scroll active (M for text-select)"
+        } else {
+            "text-select ON — drag to select, copy w/ terminal (M to restore mouse)"
+        };
+        self.show_toast(msg, ToastKind::Info);
         self.mark_dirty();
     }
 

@@ -161,6 +161,8 @@ mix (e.g. "click to select, then press Enter").
 | `F` / `Shift+F` | Open / close the detail full-view modal (for > 1 MB bodies) |
 | `y` | Copy selected request as cURL (sensitive headers → `<redacted>`) |
 | `Y` / `Shift+y` | Copy selected request as **raw** cURL (real header values) |
+| `b` / `B` | Copy the pretty-printed body of the selected request to the clipboard (response body, falls back to request body) |
+| `M` / `Shift+m` | Toggle mouse capture — turn off to drag-select & copy text with your terminal's native selection. On macOS Terminal/iTerm hold `⌥` (Option) while dragging for column-block selection that ignores the empty pane. Press `M` again to re-enable click/scroll. |
 
 ### 3b. Mouse
 

@@ -17,7 +17,7 @@ use super::super::theme::Theme;
 /// Static hint line shown when no toast is active.
 const HINT_LINE: &str = " q/Ctrl+C: quit · tab: pane · j/k or ↑/↓: nav (list) / scroll body (detail) · \
       PgUp/PgDn: body · / url · 1-5 methods · Alt+1-4 status · X clear filters · \
-      p pause · c clear · z collapse · F full · y cURL (Y raw) · click [y] row · M mouse ";
+      p pause · c clear · z collapse · F full · y cURL (Y raw) · b body · click [y] row · M select-text ";
 
 /// Render the status bar inside the provided rect.
 pub fn render(area: Rect, buf: &mut Buffer, app: &App, theme: &Theme) {

@@ -132,6 +132,11 @@ pub fn map_key(
         // future menu.
         KeyCode::Char('M') => Some(AppEvent::ToggleMouseCapture),
 
+        // Copy the selected request's body to clipboard — sidesteps the
+        // "terminal selection picks up the empty left pane" problem that
+        // native drag-select hits when bodies are wider than one row.
+        KeyCode::Char('b') | KeyCode::Char('B') => Some(AppEvent::CopyBody),
+
         _ => None,
     }
 }
@@ -340,6 +345,26 @@ mod tests {
         );
         // Lowercase x stays unbound so a future feature can claim it.
         assert_eq!(map_key(k(KeyCode::Char('x')), false, false, false), None);
+    }
+
+    #[test]
+    fn b_copies_body_in_either_case() {
+        assert_eq!(
+            map_key(k(KeyCode::Char('b')), false, false, false),
+            Some(AppEvent::CopyBody)
+        );
+        assert_eq!(
+            map_key(k(KeyCode::Char('B')), false, false, false),
+            Some(AppEvent::CopyBody)
+        );
+    }
+
+    #[test]
+    fn b_is_a_filter_char_in_input_mode() {
+        assert_eq!(
+            map_key(k(KeyCode::Char('b')), true, false, false),
+            Some(AppEvent::FilterChar('b'))
+        );
     }
 
     #[test]

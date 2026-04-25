@@ -377,6 +377,8 @@ async fn apply_app_event(ev: AppEvent, app: &mut App, store: &StoreHandle, sensi
 
         AppEvent::ToggleMouseCapture => app.toggle_mouse_capture(),
 
+        AppEvent::CopyBody => copy_selected_body(app),
+
         AppEvent::NoOp => {}
     }
 }
@@ -445,6 +447,38 @@ async fn copy_selected_curl(
             // the render. The cURL command is logged to the file via
             // tracing at debug level for recovery.
             tracing::warn!(error = %e, cmd = %cmd, "clipboard unavailable; cURL dropped to log");
+            app.show_toast(
+                format!("clipboard unavailable ({e}) — see log file"),
+                app::ToastKind::Error,
+            );
+        }
+    }
+}
+
+/// Copy the pretty-printed body of the selected request to the clipboard.
+///
+/// Mirrors what the full-view modal renders (response body, falling back
+/// to request body when the response is empty). Uses the cached redacted
+/// row — sensitive values are already `***`, no need to re-fetch from the
+/// store. Designed as the keyboard-driven escape hatch from the terminal's
+/// row-wrapping native selection.
+fn copy_selected_body(app: &mut App) {
+    let Some(req) = app.selected_request().cloned() else {
+        app.show_toast("no row selected", app::ToastKind::Error);
+        return;
+    };
+    let body = view::detail::pretty_body_string(&req);
+    if body == "(empty)" {
+        app.show_toast("body is empty — nothing to copy", app::ToastKind::Info);
+        return;
+    }
+    match copy_to_clipboard(&body) {
+        Ok(()) => {
+            tracing::info!(bytes = body.len(), "copied body to clipboard");
+            app.show_toast("body copied to clipboard", app::ToastKind::Success);
+        }
+        Err(e) => {
+            tracing::warn!(error = %e, "clipboard unavailable; body not copied");
             app.show_toast(
                 format!("clipboard unavailable ({e}) — see log file"),
                 app::ToastKind::Error,

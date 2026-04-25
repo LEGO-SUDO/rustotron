@@ -121,6 +121,12 @@ pub enum AppEvent {
     /// by the `M` keybind.
     ToggleMouseCapture,
 
+    /// Copy the pretty-printed body of the selected request to the
+    /// clipboard. Prefers the response body, falling back to the request
+    /// body when the response is empty (matches `pretty_body_string`).
+    /// Bound to `b` / `B` — works from list view and full-view modal.
+    CopyBody,
+
     /// Ignored input — the main loop receives this and skips the render.
     NoOp,
 }

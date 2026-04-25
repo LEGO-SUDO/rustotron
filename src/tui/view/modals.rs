@@ -24,7 +24,7 @@ pub fn render_full_view(area: Rect, buf: &mut Buffer, app: &mut App, theme: &The
 
     let block = Block::default()
         .borders(Borders::ALL)
-        .title(" Detail — full view (Esc to close) ")
+        .title(" Detail — full view (Esc close · b copy body · M text-select) ")
         .border_style(theme.focused_border);
 
     let Some(req) = app.selected_request().cloned() else {
